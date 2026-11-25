@@ -111,6 +111,8 @@ type SyncResponse struct {
 	// Types that are valid to be assigned to Kind:
 	//
 	//	*SyncResponse_Snapshot
+	//	*SyncResponse_SnapshotData
+	//	*SyncResponse_Challenges
 	Kind          isSyncResponse_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -153,10 +155,29 @@ func (x *SyncResponse) GetKind() isSyncResponse_Kind {
 	return nil
 }
 
+// Deprecated: Marked as deprecated in proxelo/distrib/v1/distrib.proto.
 func (x *SyncResponse) GetSnapshot() *v1.Snapshot {
 	if x != nil {
 		if x, ok := x.Kind.(*SyncResponse_Snapshot); ok {
 			return x.Snapshot
+		}
+	}
+	return nil
+}
+
+func (x *SyncResponse) GetSnapshotData() []byte {
+	if x != nil {
+		if x, ok := x.Kind.(*SyncResponse_SnapshotData); ok {
+			return x.SnapshotData
+		}
+	}
+	return nil
+}
+
+func (x *SyncResponse) GetChallenges() *Challenges {
+	if x != nil {
+		if x, ok := x.Kind.(*SyncResponse_Challenges); ok {
+			return x.Challenges
 		}
 	}
 	return nil
@@ -167,10 +188,198 @@ type isSyncResponse_Kind interface {
 }
 
 type SyncResponse_Snapshot struct {
+	// Replaced by snapshot_data, which the proxy can verify; rejected.
+	//
+	// Deprecated: Marked as deprecated in proxelo/distrib/v1/distrib.proto.
 	Snapshot *v1.Snapshot `protobuf:"bytes,1,opt,name=snapshot,proto3,oneof"`
 }
 
+type SyncResponse_SnapshotData struct {
+	// A serialized proxelo.snapshot.v1.Snapshot. The proxy checks its hash
+	// against the bytes and keeps them as the last-known-good snapshot.
+	SnapshotData []byte `protobuf:"bytes,3,opt,name=snapshot_data,json=snapshotData,proto3,oneof"`
+}
+
+type SyncResponse_Challenges struct {
+	Challenges *Challenges `protobuf:"bytes,2,opt,name=challenges,proto3,oneof"`
+}
+
 func (*SyncResponse_Snapshot) isSyncResponse_Kind() {}
+
+func (*SyncResponse_SnapshotData) isSyncResponse_Kind() {}
+
+func (*SyncResponse_Challenges) isSyncResponse_Kind() {}
+
+// Challenges replaces every ACME challenge the proxy answers. Challenges are
+// not part of a snapshot and are not persisted.
+type Challenges struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Http01        []*HttpChallenge       `protobuf:"bytes,1,rep,name=http01,proto3" json:"http01,omitempty"`
+	TlsAlpn01     []*TlsAlpnChallenge    `protobuf:"bytes,2,rep,name=tls_alpn01,json=tlsAlpn01,proto3" json:"tls_alpn01,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Challenges) Reset() {
+	*x = Challenges{}
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Challenges) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Challenges) ProtoMessage() {}
+
+func (x *Challenges) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Challenges.ProtoReflect.Descriptor instead.
+func (*Challenges) Descriptor() ([]byte, []int) {
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Challenges) GetHttp01() []*HttpChallenge {
+	if x != nil {
+		return x.Http01
+	}
+	return nil
+}
+
+func (x *Challenges) GetTlsAlpn01() []*TlsAlpnChallenge {
+	if x != nil {
+		return x.TlsAlpn01
+	}
+	return nil
+}
+
+// HttpChallenge is answered on plain listeners at
+// /.well-known/acme-challenge/<token>, before any site.
+type HttpChallenge struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Token            string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	KeyAuthorization string                 `protobuf:"bytes,2,opt,name=key_authorization,json=keyAuthorization,proto3" json:"key_authorization,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *HttpChallenge) Reset() {
+	*x = HttpChallenge{}
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HttpChallenge) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HttpChallenge) ProtoMessage() {}
+
+func (x *HttpChallenge) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HttpChallenge.ProtoReflect.Descriptor instead.
+func (*HttpChallenge) Descriptor() ([]byte, []int) {
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *HttpChallenge) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *HttpChallenge) GetKeyAuthorization() string {
+	if x != nil {
+		return x.KeyAuthorization
+	}
+	return ""
+}
+
+// TlsAlpnChallenge is offered on TLS listeners to handshakes for name that
+// ask for the acme-tls/1 protocol.
+type TlsAlpnChallenge struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Lowercase DNS name.
+	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ChainPem      string `protobuf:"bytes,2,opt,name=chain_pem,json=chainPem,proto3" json:"chain_pem,omitempty"`
+	KeyPem        string `protobuf:"bytes,3,opt,name=key_pem,json=keyPem,proto3" json:"key_pem,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TlsAlpnChallenge) Reset() {
+	*x = TlsAlpnChallenge{}
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TlsAlpnChallenge) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TlsAlpnChallenge) ProtoMessage() {}
+
+func (x *TlsAlpnChallenge) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TlsAlpnChallenge.ProtoReflect.Descriptor instead.
+func (*TlsAlpnChallenge) Descriptor() ([]byte, []int) {
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *TlsAlpnChallenge) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *TlsAlpnChallenge) GetChainPem() string {
+	if x != nil {
+		return x.ChainPem
+	}
+	return ""
+}
+
+func (x *TlsAlpnChallenge) GetKeyPem() string {
+	if x != nil {
+		return x.KeyPem
+	}
+	return ""
+}
 
 type Hello struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
@@ -184,7 +393,7 @@ type Hello struct {
 
 func (x *Hello) Reset() {
 	*x = Hello{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[2]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -196,7 +405,7 @@ func (x *Hello) String() string {
 func (*Hello) ProtoMessage() {}
 
 func (x *Hello) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[2]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -209,7 +418,7 @@ func (x *Hello) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Hello.ProtoReflect.Descriptor instead.
 func (*Hello) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{2}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Hello) GetNodeId() string {
@@ -245,7 +454,7 @@ type Ack struct {
 
 func (x *Ack) Reset() {
 	*x = Ack{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[3]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -257,7 +466,7 @@ func (x *Ack) String() string {
 func (*Ack) ProtoMessage() {}
 
 func (x *Ack) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[3]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -270,7 +479,7 @@ func (x *Ack) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ack.ProtoReflect.Descriptor instead.
 func (*Ack) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{3}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Ack) GetRevision() uint64 {
@@ -302,10 +511,26 @@ const file_proxelo_distrib_v1_distrib_proto_rawDesc = "" +
 	"\vSyncRequest\x121\n" +
 	"\x05hello\x18\x01 \x01(\v2\x19.proxelo.distrib.v1.HelloH\x00R\x05hello\x12+\n" +
 	"\x03ack\x18\x02 \x01(\v2\x17.proxelo.distrib.v1.AckH\x00R\x03ackB\x06\n" +
-	"\x04kind\"S\n" +
-	"\fSyncResponse\x12;\n" +
-	"\bsnapshot\x18\x01 \x01(\v2\x1d.proxelo.snapshot.v1.SnapshotH\x00R\bsnapshotB\x06\n" +
-	"\x04kind\"n\n" +
+	"\x04kind\"\xc0\x01\n" +
+	"\fSyncResponse\x12?\n" +
+	"\bsnapshot\x18\x01 \x01(\v2\x1d.proxelo.snapshot.v1.SnapshotB\x02\x18\x01H\x00R\bsnapshot\x12%\n" +
+	"\rsnapshot_data\x18\x03 \x01(\fH\x00R\fsnapshotData\x12@\n" +
+	"\n" +
+	"challenges\x18\x02 \x01(\v2\x1e.proxelo.distrib.v1.ChallengesH\x00R\n" +
+	"challengesB\x06\n" +
+	"\x04kind\"\x8c\x01\n" +
+	"\n" +
+	"Challenges\x129\n" +
+	"\x06http01\x18\x01 \x03(\v2!.proxelo.distrib.v1.HttpChallengeR\x06http01\x12C\n" +
+	"\n" +
+	"tls_alpn01\x18\x02 \x03(\v2$.proxelo.distrib.v1.TlsAlpnChallengeR\ttlsAlpn01\"R\n" +
+	"\rHttpChallenge\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12+\n" +
+	"\x11key_authorization\x18\x02 \x01(\tR\x10keyAuthorization\"\\\n" +
+	"\x10TlsAlpnChallenge\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1b\n" +
+	"\tchain_pem\x18\x02 \x01(\tR\bchainPem\x12\x17\n" +
+	"\akey_pem\x18\x03 \x01(\tR\x06keyPem\"n\n" +
 	"\x05Hello\x12\x17\n" +
 	"\anode_id\x18\x01 \x01(\tR\x06nodeId\x12#\n" +
 	"\rproxy_version\x18\x02 \x01(\tR\fproxyVersion\x12'\n" +
@@ -329,25 +554,31 @@ func file_proxelo_distrib_v1_distrib_proto_rawDescGZIP() []byte {
 	return file_proxelo_distrib_v1_distrib_proto_rawDescData
 }
 
-var file_proxelo_distrib_v1_distrib_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proxelo_distrib_v1_distrib_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proxelo_distrib_v1_distrib_proto_goTypes = []any{
-	(*SyncRequest)(nil),  // 0: proxelo.distrib.v1.SyncRequest
-	(*SyncResponse)(nil), // 1: proxelo.distrib.v1.SyncResponse
-	(*Hello)(nil),        // 2: proxelo.distrib.v1.Hello
-	(*Ack)(nil),          // 3: proxelo.distrib.v1.Ack
-	(*v1.Snapshot)(nil),  // 4: proxelo.snapshot.v1.Snapshot
+	(*SyncRequest)(nil),      // 0: proxelo.distrib.v1.SyncRequest
+	(*SyncResponse)(nil),     // 1: proxelo.distrib.v1.SyncResponse
+	(*Challenges)(nil),       // 2: proxelo.distrib.v1.Challenges
+	(*HttpChallenge)(nil),    // 3: proxelo.distrib.v1.HttpChallenge
+	(*TlsAlpnChallenge)(nil), // 4: proxelo.distrib.v1.TlsAlpnChallenge
+	(*Hello)(nil),            // 5: proxelo.distrib.v1.Hello
+	(*Ack)(nil),              // 6: proxelo.distrib.v1.Ack
+	(*v1.Snapshot)(nil),      // 7: proxelo.snapshot.v1.Snapshot
 }
 var file_proxelo_distrib_v1_distrib_proto_depIdxs = []int32{
-	2, // 0: proxelo.distrib.v1.SyncRequest.hello:type_name -> proxelo.distrib.v1.Hello
-	3, // 1: proxelo.distrib.v1.SyncRequest.ack:type_name -> proxelo.distrib.v1.Ack
-	4, // 2: proxelo.distrib.v1.SyncResponse.snapshot:type_name -> proxelo.snapshot.v1.Snapshot
-	0, // 3: proxelo.distrib.v1.DistributionService.Sync:input_type -> proxelo.distrib.v1.SyncRequest
-	1, // 4: proxelo.distrib.v1.DistributionService.Sync:output_type -> proxelo.distrib.v1.SyncResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	5, // 0: proxelo.distrib.v1.SyncRequest.hello:type_name -> proxelo.distrib.v1.Hello
+	6, // 1: proxelo.distrib.v1.SyncRequest.ack:type_name -> proxelo.distrib.v1.Ack
+	7, // 2: proxelo.distrib.v1.SyncResponse.snapshot:type_name -> proxelo.snapshot.v1.Snapshot
+	2, // 3: proxelo.distrib.v1.SyncResponse.challenges:type_name -> proxelo.distrib.v1.Challenges
+	3, // 4: proxelo.distrib.v1.Challenges.http01:type_name -> proxelo.distrib.v1.HttpChallenge
+	4, // 5: proxelo.distrib.v1.Challenges.tls_alpn01:type_name -> proxelo.distrib.v1.TlsAlpnChallenge
+	0, // 6: proxelo.distrib.v1.DistributionService.Sync:input_type -> proxelo.distrib.v1.SyncRequest
+	1, // 7: proxelo.distrib.v1.DistributionService.Sync:output_type -> proxelo.distrib.v1.SyncResponse
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_proxelo_distrib_v1_distrib_proto_init() }
@@ -361,6 +592,8 @@ func file_proxelo_distrib_v1_distrib_proto_init() {
 	}
 	file_proxelo_distrib_v1_distrib_proto_msgTypes[1].OneofWrappers = []any{
 		(*SyncResponse_Snapshot)(nil),
+		(*SyncResponse_SnapshotData)(nil),
+		(*SyncResponse_Challenges)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -368,7 +601,7 @@ func file_proxelo_distrib_v1_distrib_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proxelo_distrib_v1_distrib_proto_rawDesc), len(file_proxelo_distrib_v1_distrib_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -150,7 +150,10 @@ type HttpRequest struct {
 	// Request headers, including Host.
 	Headers []*Header `protobuf:"bytes,4,rep,name=headers,proto3" json:"headers,omitempty"`
 	// Client IP address. Empty: 127.0.0.1.
-	RemoteAddr    string `protobuf:"bytes,5,opt,name=remote_addr,json=remoteAddr,proto3" json:"remote_addr,omitempty"`
+	RemoteAddr string `protobuf:"bytes,5,opt,name=remote_addr,json=remoteAddr,proto3" json:"remote_addr,omitempty"`
+	// The request arrived over TLS ($scheme https). The SNI name is taken
+	// from the Host header.
+	Tls           bool `protobuf:"varint,6,opt,name=tls,proto3" json:"tls,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -218,6 +221,13 @@ func (x *HttpRequest) GetRemoteAddr() string {
 		return x.RemoteAddr
 	}
 	return ""
+}
+
+func (x *HttpRequest) GetTls() bool {
+	if x != nil {
+		return x.Tls
+	}
+	return false
 }
 
 type Header struct {
@@ -349,9 +359,13 @@ type Result struct {
 	Upstream string   `protobuf:"bytes,9,opt,name=upstream,proto3" json:"upstream,omitempty"`
 	Targets  []string `protobuf:"bytes,10,rep,name=targets,proto3" json:"targets,omitempty"`
 	// The phases the request went through, in order, for display.
-	Trace         []string `protobuf:"bytes,11,rep,name=trace,proto3" json:"trace,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Trace []string `protobuf:"bytes,11,rep,name=trace,proto3" json:"trace,omitempty"`
+	// Headers the route adds to the response (set and add, expanded), and to
+	// the request sent upstream for KIND_PROXY.
+	ResponseHeaders []*Header `protobuf:"bytes,12,rep,name=response_headers,json=responseHeaders,proto3" json:"response_headers,omitempty"`
+	RequestHeaders  []*Header `protobuf:"bytes,13,rep,name=request_headers,json=requestHeaders,proto3" json:"request_headers,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Result) Reset() {
@@ -461,6 +475,20 @@ func (x *Result) GetTrace() []string {
 	return nil
 }
 
+func (x *Result) GetResponseHeaders() []*Header {
+	if x != nil {
+		return x.ResponseHeaders
+	}
+	return nil
+}
+
+func (x *Result) GetRequestHeaders() []*Header {
+	if x != nil {
+		return x.RequestHeaders
+	}
+	return nil
+}
+
 var File_proxelo_sim_v1_sim_proto protoreflect.FileDescriptor
 
 const file_proxelo_sim_v1_sim_proto_rawDesc = "" +
@@ -469,20 +497,21 @@ const file_proxelo_sim_v1_sim_proto_rawDesc = "" +
 	"\n" +
 	"SimRequest\x12\x1a\n" +
 	"\bsnapshot\x18\x01 \x01(\fR\bsnapshot\x127\n" +
-	"\brequests\x18\x02 \x03(\v2\x1b.proxelo.sim.v1.HttpRequestR\brequests\"\xac\x01\n" +
+	"\brequests\x18\x02 \x03(\v2\x1b.proxelo.sim.v1.HttpRequestR\brequests\"\xbe\x01\n" +
 	"\vHttpRequest\x12\x1a\n" +
 	"\blistener\x18\x01 \x01(\tR\blistener\x12\x16\n" +
 	"\x06method\x18\x02 \x01(\tR\x06method\x12\x16\n" +
 	"\x06target\x18\x03 \x01(\tR\x06target\x120\n" +
 	"\aheaders\x18\x04 \x03(\v2\x16.proxelo.sim.v1.HeaderR\aheaders\x12\x1f\n" +
 	"\vremote_addr\x18\x05 \x01(\tR\n" +
-	"remoteAddr\"2\n" +
+	"remoteAddr\x12\x10\n" +
+	"\x03tls\x18\x06 \x01(\bR\x03tls\"2\n" +
 	"\x06Header\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value\"U\n" +
 	"\vSimResponse\x12\x14\n" +
 	"\x05error\x18\x01 \x01(\tR\x05error\x120\n" +
-	"\aresults\x18\x02 \x03(\v2\x16.proxelo.sim.v1.ResultR\aresults\"\x90\x03\n" +
+	"\aresults\x18\x02 \x03(\v2\x16.proxelo.sim.v1.ResultR\aresults\"\x94\x04\n" +
 	"\x06Result\x12/\n" +
 	"\x04kind\x18\x01 \x01(\x0e2\x1b.proxelo.sim.v1.Result.KindR\x04kind\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\rR\x06status\x12\x12\n" +
@@ -495,7 +524,9 @@ const file_proxelo_sim_v1_sim_proto_rawDesc = "" +
 	"\bupstream\x18\t \x01(\tR\bupstream\x12\x18\n" +
 	"\atargets\x18\n" +
 	" \x03(\tR\atargets\x12\x14\n" +
-	"\x05trace\x18\v \x03(\tR\x05trace\"q\n" +
+	"\x05trace\x18\v \x03(\tR\x05trace\x12A\n" +
+	"\x10response_headers\x18\f \x03(\v2\x16.proxelo.sim.v1.HeaderR\x0fresponseHeaders\x12?\n" +
+	"\x0frequest_headers\x18\r \x03(\v2\x16.proxelo.sim.v1.HeaderR\x0erequestHeaders\"q\n" +
 	"\x04Kind\x12\x14\n" +
 	"\x10KIND_UNSPECIFIED\x10\x00\x12\x11\n" +
 	"\rKIND_RESPONSE\x10\x01\x12\x11\n" +
@@ -533,11 +564,13 @@ var file_proxelo_sim_v1_sim_proto_depIdxs = []int32{
 	3, // 1: proxelo.sim.v1.HttpRequest.headers:type_name -> proxelo.sim.v1.Header
 	5, // 2: proxelo.sim.v1.SimResponse.results:type_name -> proxelo.sim.v1.Result
 	0, // 3: proxelo.sim.v1.Result.kind:type_name -> proxelo.sim.v1.Result.Kind
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	3, // 4: proxelo.sim.v1.Result.response_headers:type_name -> proxelo.sim.v1.Header
+	3, // 5: proxelo.sim.v1.Result.request_headers:type_name -> proxelo.sim.v1.Header
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_proxelo_sim_v1_sim_proto_init() }

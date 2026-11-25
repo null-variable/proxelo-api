@@ -14,7 +14,10 @@ fn snapshot_roundtrip() {
                     value: "/api/".into(),
                 }),
                 action: Some(Action {
-                    kind: Some(action::Kind::Proxy(ProxyAction { upstream: 0 })),
+                    kind: Some(action::Kind::Proxy(ProxyAction {
+                        upstream: 0,
+                        ..Default::default()
+                    })),
                 }),
                 ..Default::default()
             }],

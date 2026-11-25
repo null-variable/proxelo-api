@@ -31,6 +31,9 @@ message HttpRequest {
   repeated Header headers = 4;
   // Client IP address. Empty: 127.0.0.1.
   string remote_addr = 5;
+  // The request arrived over TLS ($scheme https). The SNI name is taken
+  // from the Host header.
+  bool tls = 6;
 }
 
 message Header {
@@ -81,4 +84,8 @@ message Result {
   repeated string targets = 10;
   // The phases the request went through, in order, for display.
   repeated string trace = 11;
+  // Headers the route adds to the response (set and add, expanded), and to
+  // the request sent upstream for KIND_PROXY.
+  repeated Header response_headers = 12;
+  repeated Header request_headers = 13;
 }

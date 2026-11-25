@@ -23,8 +23,36 @@ message SyncRequest {
 // Sent by the control plane.
 message SyncResponse {
   oneof kind {
-    proxelo.snapshot.v1.Snapshot snapshot = 1;
+    // Replaced by snapshot_data, which the proxy can verify; rejected.
+    proxelo.snapshot.v1.Snapshot snapshot = 1 [deprecated = true];
+    // A serialized proxelo.snapshot.v1.Snapshot. The proxy checks its hash
+    // against the bytes and keeps them as the last-known-good snapshot.
+    bytes snapshot_data = 3;
+    Challenges challenges = 2;
   }
+}
+
+// Challenges replaces every ACME challenge the proxy answers. Challenges are
+// not part of a snapshot and are not persisted.
+message Challenges {
+  repeated HttpChallenge http01 = 1;
+  repeated TlsAlpnChallenge tls_alpn01 = 2;
+}
+
+// HttpChallenge is answered on plain listeners at
+// /.well-known/acme-challenge/<token>, before any site.
+message HttpChallenge {
+  string token = 1;
+  string key_authorization = 2;
+}
+
+// TlsAlpnChallenge is offered on TLS listeners to handshakes for name that
+// ask for the acme-tls/1 protocol.
+message TlsAlpnChallenge {
+  // Lowercase DNS name.
+  string name = 1;
+  string chain_pem = 2;
+  string key_pem = 3;
 }
 
 message Hello {

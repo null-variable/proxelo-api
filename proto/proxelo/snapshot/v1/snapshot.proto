@@ -13,6 +13,51 @@ message Snapshot {
   repeated Listener listeners = 3;
   repeated Site sites = 4;
   repeated Upstream upstreams = 5;
+  repeated Certificate certificates = 6;
+  repeated AccessLog access_logs = 7;
+}
+
+// Certificate is a certificate chain and its private key, referenced by
+// index from sites and listeners.
+message Certificate {
+  // Control plane resource ID.
+  string id = 1;
+  // PEM: the leaf first, then intermediates.
+  string chain_pem = 2;
+  // PEM private key.
+  string key_pem = 3;
+}
+
+// AccessLog is one nginx access_log with its log_format.
+message AccessLog {
+  // "stdout", "stderr" or an absolute file path, opened for appending.
+  string path = 1;
+  // Template for one line in nginx log_format syntax, without the newline.
+  // Unset values log as "-".
+  string format = 2;
+  // Escape values for JSON (log_format escape=json) instead of nginx's
+  // default \xHH escaping.
+  bool escape_json = 3;
+}
+
+// HeaderOps changes a header list: remove first, then set, then add.
+message HeaderOps {
+  // Replace every header with this name.
+  repeated HeaderValue set = 1;
+  // Append, keeping headers with the same name.
+  repeated HeaderValue add = 2;
+  // Case-insensitive names to drop.
+  repeated string remove = 3;
+}
+
+message HeaderValue {
+  string name = 1;
+  // Template. A header whose value expands to nothing is not sent, as in
+  // nginx.
+  string value = 2;
+  // Response headers only: send with every status. Otherwise only with 200,
+  // 201, 204, 206, 301, 302, 303, 304, 307 and 308 (nginx add_header).
+  bool always = 3;
 }
 
 message Listener {
@@ -24,6 +69,29 @@ message Listener {
   optional uint32 default_site = 4;
   // Control plane resource ID, for logs, metrics and simulation results.
   string id = 5;
+  // TLS on this listener. Unset: plain TCP.
+  ListenerTls tls = 6;
+  // Offer HTTP/2 through ALPN. Only with tls.
+  bool http2 = 7;
+}
+
+message ListenerTls {
+  enum Version {
+    VERSION_UNSPECIFIED = 0;
+    VERSION_TLS1_0 = 1;
+    VERSION_TLS1_1 = 2;
+    VERSION_TLS1_2 = 3;
+    VERSION_TLS1_3 = 4;
+  }
+  // Lowest protocol version accepted. Unspecified: TLS 1.2, as nginx's
+  // default ssl_protocols TLSv1.2 TLSv1.3.
+  Version min_version = 1;
+  // OpenSSL cipher list for TLS 1.2 and below. Empty: "HIGH:!aNULL:!MD5"
+  // (nginx default).
+  string ciphers = 2;
+  // Index into Snapshot.certificates for handshakes without SNI or whose SNI
+  // selects a site without certificates. Unset: those handshakes fail.
+  optional uint32 default_certificate = 3;
 }
 
 message Site {
@@ -46,10 +114,23 @@ message Site {
   repeated Route named_routes = 7;
   // Control plane resource ID.
   string id = 8;
+  // Indexes into Snapshot.certificates. On a TLS listener the SNI name
+  // selects the site like the Host header does, and these are offered, at
+  // most one per key type (RSA, ECDSA).
+  repeated uint32 certificates = 9;
+  // On plain listeners, answer every request with a 301 to the same URI over
+  // https.
+  bool redirect_https = 10;
+  // Applied to responses made before a route is chosen.
+  HeaderOps response_headers = 11;
+  // Index into Snapshot.access_logs for requests that end before a route is
+  // chosen. Unset: not logged.
+  optional uint32 access_log = 12;
 }
 
 // Template strings (Rewrite.replacement, ReturnAction.text, TryFiles,
-// ErrorPage.uri) use nginx variable syntax: $name or ${name}, and $1..$9 for
+// ErrorPage.uri, HeaderValue.value, AccessLog.format) use nginx variable
+// syntax: $name or ${name}, and $1..$9 for
 // the captures of the last regex that matched (a regex route or a rewrite).
 // The proxy rejects a snapshot that names a variable it does not know.
 
@@ -140,6 +221,13 @@ message Route {
   // standard library and the network extension (cidr, ip). Must evaluate to a
   // bool; an evaluation error counts as false. Empty: none.
   string expr = 10;
+  // Applied to every response of this route, including proxied ones. The
+  // control plane resolves inheritance.
+  HeaderOps response_headers = 11;
+  // Applied to the request sent upstream (proxy_set_header).
+  HeaderOps request_headers = 12;
+  // Index into Snapshot.access_logs. Unset: not logged.
+  optional uint32 access_log = 13;
 }
 
 // ValueMatch is one condition on a header (case-insensitive name) or a query
@@ -228,22 +316,65 @@ message StaticAction {
 message ProxyAction {
   // Index into Snapshot.upstreams.
   uint32 upstream = 1;
+  // Zero: 60 s, the nginx defaults of proxy_connect_timeout,
+  // proxy_send_timeout and proxy_read_timeout.
+  uint32 connect_timeout_ms = 2;
+  uint32 send_timeout_ms = 3;
+  uint32 read_timeout_ms = 4;
+  // proxy_next_upstream. Empty: error and timeout.
+  repeated NextUpstream next_upstream = 5;
+  // proxy_next_upstream_tries. Zero: no limit.
+  uint32 next_upstream_tries = 6;
+}
+
+// When a request moves on to the next target (proxy_next_upstream).
+enum NextUpstream {
+  NEXT_UPSTREAM_UNSPECIFIED = 0;
+  // Never; overrides the others.
+  NEXT_UPSTREAM_OFF = 1;
+  NEXT_UPSTREAM_ERROR = 2;
+  NEXT_UPSTREAM_TIMEOUT = 3;
+  NEXT_UPSTREAM_HTTP_500 = 4;
+  NEXT_UPSTREAM_HTTP_502 = 5;
+  NEXT_UPSTREAM_HTTP_503 = 6;
+  NEXT_UPSTREAM_HTTP_504 = 7;
+  NEXT_UPSTREAM_HTTP_403 = 8;
+  NEXT_UPSTREAM_HTTP_404 = 9;
+  NEXT_UPSTREAM_HTTP_429 = 10;
+  // Also retry POST, PATCH and other non-idempotent requests.
+  NEXT_UPSTREAM_NON_IDEMPOTENT = 11;
 }
 
 message Upstream {
   enum Balancing {
     BALANCING_UNSPECIFIED = 0;
+    // Smooth weighted round robin (nginx default).
     BALANCING_ROUND_ROBIN = 1;
+    // Fewest active requests relative to weight, ties by round robin (nginx
+    // least_conn).
+    BALANCING_LEAST_CONN = 2;
   }
   repeated Target targets = 1;
   Balancing balancing = 2;
   uint32 keepalive_idle = 3;
   // Control plane resource ID.
   string id = 4;
+  // Passive health (nginx max_fails and fail_timeout): after max_fails
+  // failures within fail_timeout a target is skipped for fail_timeout.
+  // max_fails 0 disables it. With a single target it does not apply, as in
+  // nginx. The control plane sends nginx's defaults, 1 and 10 s.
+  uint32 max_fails = 5;
+  uint32 fail_timeout_ms = 6;
+  // How long an idle upstream connection is kept. Zero: 60 s.
+  uint32 keepalive_timeout_ms = 7;
+  // Requests per upstream connection before it is closed. Zero: 1000.
+  uint32 keepalive_requests = 8;
 }
 
 message Target {
   // host:port
   string address = 1;
   uint32 weight = 2;
+  // Used only when every other target is unavailable (nginx backup).
+  bool backup = 3;
 }
