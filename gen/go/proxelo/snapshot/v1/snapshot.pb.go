@@ -25,7 +25,13 @@ type HostMatch_Kind int32
 
 const (
 	HostMatch_KIND_UNSPECIFIED HostMatch_Kind = 0
-	HostMatch_KIND_EXACT       HostMatch_Kind = 1
+	// Lowercase host name.
+	HostMatch_KIND_EXACT HostMatch_Kind = 1
+	// "*.example.com" (leading), "mail.*" (trailing) or ".example.com", which
+	// matches example.com and every name under it.
+	HostMatch_KIND_WILDCARD HostMatch_Kind = 2
+	// PCRE2 pattern matched against the lowercase host, without the "~".
+	HostMatch_KIND_REGEX HostMatch_Kind = 3
 )
 
 // Enum value maps for HostMatch_Kind.
@@ -33,10 +39,14 @@ var (
 	HostMatch_Kind_name = map[int32]string{
 		0: "KIND_UNSPECIFIED",
 		1: "KIND_EXACT",
+		2: "KIND_WILDCARD",
+		3: "KIND_REGEX",
 	}
 	HostMatch_Kind_value = map[string]int32{
 		"KIND_UNSPECIFIED": 0,
 		"KIND_EXACT":       1,
+		"KIND_WILDCARD":    2,
+		"KIND_REGEX":       3,
 	}
 )
 
@@ -71,8 +81,16 @@ type PathMatch_Kind int32
 
 const (
 	PathMatch_KIND_UNSPECIFIED PathMatch_Kind = 0
-	PathMatch_KIND_EXACT       PathMatch_Kind = 1
-	PathMatch_KIND_PREFIX      PathMatch_Kind = 2
+	// location = /path
+	PathMatch_KIND_EXACT PathMatch_Kind = 1
+	// location /path
+	PathMatch_KIND_PREFIX PathMatch_Kind = 2
+	// location ^~ /path
+	PathMatch_KIND_PREFIX_PRIORITY PathMatch_Kind = 3
+	// location ~ pattern (PCRE2, case-sensitive)
+	PathMatch_KIND_REGEX PathMatch_Kind = 4
+	// location ~* pattern (PCRE2, caseless)
+	PathMatch_KIND_REGEX_CI PathMatch_Kind = 5
 )
 
 // Enum value maps for PathMatch_Kind.
@@ -81,11 +99,17 @@ var (
 		0: "KIND_UNSPECIFIED",
 		1: "KIND_EXACT",
 		2: "KIND_PREFIX",
+		3: "KIND_PREFIX_PRIORITY",
+		4: "KIND_REGEX",
+		5: "KIND_REGEX_CI",
 	}
 	PathMatch_Kind_value = map[string]int32{
-		"KIND_UNSPECIFIED": 0,
-		"KIND_EXACT":       1,
-		"KIND_PREFIX":      2,
+		"KIND_UNSPECIFIED":     0,
+		"KIND_EXACT":           1,
+		"KIND_PREFIX":          2,
+		"KIND_PREFIX_PRIORITY": 3,
+		"KIND_REGEX":           4,
+		"KIND_REGEX_CI":        5,
 	}
 )
 
@@ -371,6 +395,10 @@ func (x *Site) GetRoutes() []*Route {
 	return nil
 }
 
+// HostMatch is one nginx server_name. A listener picks the site by exact
+// name, then the longest leading wildcard, then the longest trailing
+// wildcard, then the first matching regex in snapshot order, then
+// Listener.default_site.
 type HostMatch struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Kind          HostMatch_Kind         `protobuf:"varint,1,opt,name=kind,proto3,enum=proxelo.snapshot.v1.HostMatch_Kind" json:"kind,omitempty"`
@@ -475,6 +503,10 @@ func (x *Route) GetAction() *Action {
 	return nil
 }
 
+// PathMatch is one nginx location, matched against the normalized path in
+// nginx order: an exact match wins; otherwise the longest prefix of either
+// prefix kind is found, and wins at once if it is PREFIX_PRIORITY; otherwise
+// the first matching regex in route order wins; otherwise the longest prefix.
 type PathMatch struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Kind          PathMatch_Kind         `protobuf:"varint,1,opt,name=kind,proto3,enum=proxelo.snapshot.v1.PathMatch_Kind" json:"kind,omitempty"`
@@ -840,25 +872,32 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\x04Site\x12\x1c\n" +
 	"\tlisteners\x18\x01 \x03(\rR\tlisteners\x12<\n" +
 	"\thostnames\x18\x02 \x03(\v2\x1e.proxelo.snapshot.v1.HostMatchR\thostnames\x122\n" +
-	"\x06routes\x18\x03 \x03(\v2\x1a.proxelo.snapshot.v1.RouteR\x06routes\"\x88\x01\n" +
+	"\x06routes\x18\x03 \x03(\v2\x1a.proxelo.snapshot.v1.RouteR\x06routes\"\xab\x01\n" +
 	"\tHostMatch\x127\n" +
 	"\x04kind\x18\x01 \x01(\x0e2#.proxelo.snapshot.v1.HostMatch.KindR\x04kind\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value\",\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value\"O\n" +
 	"\x04Kind\x12\x14\n" +
 	"\x10KIND_UNSPECIFIED\x10\x00\x12\x0e\n" +
 	"\n" +
-	"KIND_EXACT\x10\x01\"p\n" +
+	"KIND_EXACT\x10\x01\x12\x11\n" +
+	"\rKIND_WILDCARD\x10\x02\x12\x0e\n" +
+	"\n" +
+	"KIND_REGEX\x10\x03\"p\n" +
 	"\x05Route\x122\n" +
 	"\x04path\x18\x01 \x01(\v2\x1e.proxelo.snapshot.v1.PathMatchR\x04path\x123\n" +
-	"\x06action\x18\x02 \x01(\v2\x1b.proxelo.snapshot.v1.ActionR\x06action\"\x99\x01\n" +
+	"\x06action\x18\x02 \x01(\v2\x1b.proxelo.snapshot.v1.ActionR\x06action\"\xd6\x01\n" +
 	"\tPathMatch\x127\n" +
 	"\x04kind\x18\x01 \x01(\x0e2#.proxelo.snapshot.v1.PathMatch.KindR\x04kind\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value\"=\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value\"z\n" +
 	"\x04Kind\x12\x14\n" +
 	"\x10KIND_UNSPECIFIED\x10\x00\x12\x0e\n" +
 	"\n" +
 	"KIND_EXACT\x10\x01\x12\x0f\n" +
-	"\vKIND_PREFIX\x10\x02\"\x87\x01\n" +
+	"\vKIND_PREFIX\x10\x02\x12\x18\n" +
+	"\x14KIND_PREFIX_PRIORITY\x10\x03\x12\x0e\n" +
+	"\n" +
+	"KIND_REGEX\x10\x04\x12\x11\n" +
+	"\rKIND_REGEX_CI\x10\x05\"\x87\x01\n" +
 	"\x06Action\x12;\n" +
 	"\x06static\x18\x01 \x01(\v2!.proxelo.snapshot.v1.StaticActionH\x00R\x06static\x128\n" +
 	"\x05proxy\x18\x02 \x01(\v2 .proxelo.snapshot.v1.ProxyActionH\x00R\x05proxyB\x06\n" +

@@ -30,10 +30,20 @@ message Site {
   repeated Route routes = 3;
 }
 
+// HostMatch is one nginx server_name. A listener picks the site by exact
+// name, then the longest leading wildcard, then the longest trailing
+// wildcard, then the first matching regex in snapshot order, then
+// Listener.default_site.
 message HostMatch {
   enum Kind {
     KIND_UNSPECIFIED = 0;
+    // Lowercase host name.
     KIND_EXACT = 1;
+    // "*.example.com" (leading), "mail.*" (trailing) or ".example.com", which
+    // matches example.com and every name under it.
+    KIND_WILDCARD = 2;
+    // PCRE2 pattern matched against the lowercase host, without the "~".
+    KIND_REGEX = 3;
   }
   Kind kind = 1;
   string value = 2;
@@ -44,11 +54,23 @@ message Route {
   Action action = 2;
 }
 
+// PathMatch is one nginx location, matched against the normalized path in
+// nginx order: an exact match wins; otherwise the longest prefix of either
+// prefix kind is found, and wins at once if it is PREFIX_PRIORITY; otherwise
+// the first matching regex in route order wins; otherwise the longest prefix.
 message PathMatch {
   enum Kind {
     KIND_UNSPECIFIED = 0;
+    // location = /path
     KIND_EXACT = 1;
+    // location /path
     KIND_PREFIX = 2;
+    // location ^~ /path
+    KIND_PREFIX_PRIORITY = 3;
+    // location ~ pattern (PCRE2, case-sensitive)
+    KIND_REGEX = 4;
+    // location ~* pattern (PCRE2, caseless)
+    KIND_REGEX_CI = 5;
   }
   Kind kind = 1;
   string value = 2;
