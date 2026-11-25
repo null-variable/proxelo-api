@@ -1,0 +1,17 @@
+[package]
+name = "proxelo-api"
+version = "0.0.1"
+edition = "2024"
+license = "MIT"
+description = "Protocol definitions shared by the Proxelo control plane and proxy"
+repository = "https://github.com/null-variable/proxelo-api"
+publish = false
+
+[dependencies]
+prost = "0.14"
+tonic = { version = "0.14", default-features = false, features = ["codegen"] }
+tonic-prost = "0.14"
+
+[build-dependencies]
+protox = "0.10"
+tonic-prost-build = "0.14"

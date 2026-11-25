@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package proxelo.distrib.v1;
+
+import "proxelo/snapshot/v1/snapshot.proto";
+
+option go_package = "github.com/null-variable/proxelo-api/gen/go/proxelo/distrib/v1;distribv1";
+
+// DistributionService is served by the control plane. Proxies dial in and keep the
+// stream open; the control plane pushes snapshots, the proxy reports back.
+service DistributionService {
+  rpc Sync(stream SyncRequest) returns (stream SyncResponse);
+}
+
+// Sent by the proxy.
+message SyncRequest {
+  oneof kind {
+    Hello hello = 1;
+    Ack ack = 2;
+  }
+}
+
+// Sent by the control plane.
+message SyncResponse {
+  oneof kind {
+    proxelo.snapshot.v1.Snapshot snapshot = 1;
+  }
+}
+
+message Hello {
+  string node_id = 1;
+  string proxy_version = 2;
+  // Revision of the last-known-good snapshot the proxy is serving, 0 if none.
+  uint64 active_revision = 3;
+}
+
+message Ack {
+  uint64 revision = 1;
+  bool applied = 2;
+  // Set when applied is false.
+  string error = 3;
+}

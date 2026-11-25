@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  buf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: bufbuild/buf-action@v1
+        with:
+          lint: true
+          format: true
+          breaking: ${{ github.event_name == 'pull_request' }}
+          breaking_against: ${{ github.event.repository.clone_url }}#branch=${{ github.event.pull_request.base.ref }}
+          push: false
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Generated code is up to date
+        run: |
+          buf generate
+          git diff --exit-code -- gen/go
+      - run: go build ./...
+      - run: go vet ./...
+
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo build
