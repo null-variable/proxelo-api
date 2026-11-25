@@ -2,7 +2,7 @@
 name = "proxelo-api"
 version = "0.0.1"
 edition = "2024"
-license = "MIT"
+license = "Apache-2.0"
 description = "Protocol definitions shared by the Proxelo control plane and proxy"
 repository = "https://github.com/null-variable/proxelo-api"
 publish = false
