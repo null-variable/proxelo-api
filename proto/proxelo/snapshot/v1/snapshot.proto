@@ -28,6 +28,63 @@ message Site {
   repeated uint32 listeners = 1;
   repeated HostMatch hostnames = 2;
   repeated Route routes = 3;
+  // Server-level rewrites (nginx rewrite in a server block), run before the
+  // route is chosen. They run again after an internal redirect by an index
+  // file, try_files or error_page, but not after a route's "rewrite last",
+  // as in nginx.
+  repeated Rewrite rewrites = 4;
+  // error_page for responses produced before a route is chosen.
+  repeated ErrorPage error_pages = 5;
+  // Server-level return, after the rewrites unless one of them stopped with
+  // last or break.
+  ReturnAction return = 6;
+  // nginx named locations (@name): reachable only from TryFiles and
+  // ErrorPage, never by path. Their path, children and rewrites' last flag
+  // do not apply.
+  repeated Route named_routes = 7;
+}
+
+// Template strings (Rewrite.replacement, ReturnAction.text, TryFiles,
+// ErrorPage.uri) use nginx variable syntax: $name or ${name}, and $1..$9 for
+// the captures of the last regex that matched (a regex route or a rewrite).
+// The proxy rejects a snapshot that names a variable it does not know.
+
+// Rewrite is one nginx rewrite directive.
+message Rewrite {
+  enum Flag {
+    // No flag: continue with the next rewrite; the route is chosen again
+    // afterwards if the path changed.
+    FLAG_UNSPECIFIED = 0;
+    FLAG_LAST = 1;
+    FLAG_BREAK = 2;
+    // 302
+    FLAG_REDIRECT = 3;
+    // 301
+    FLAG_PERMANENT = 4;
+  }
+  // PCRE2 pattern matched against the normalized path.
+  string regex = 1;
+  // Template. A result starting with http://, https:// or $scheme redirects
+  // with 302. A "?" starts new arguments; the old ones are appended unless
+  // the replacement ends with "?".
+  string replacement = 2;
+  Flag flag = 3;
+}
+
+// ErrorPage is one nginx error_page directive. It applies to responses the
+// proxy produces itself (not to upstream responses), once per request.
+message ErrorPage {
+  repeated uint32 codes = 1;
+  oneof target {
+    // Template. A path is an internal redirect (method becomes GET unless
+    // HEAD); an absolute http(s) URL is a redirect with status, or 302.
+    string uri = 2;
+    // Index into Site.named_routes.
+    uint32 named = 4;
+  }
+  // Unset: answer with the original code. 0: answer with the status of the
+  // redirected request ("error_page 404 = /x"). Otherwise this code.
+  optional uint32 status = 3;
 }
 
 // HostMatch is one nginx server_name. A listener picks the site by exact
@@ -52,6 +109,17 @@ message HostMatch {
 message Route {
   PathMatch path = 1;
   Action action = 2;
+  // Run in order after the route is chosen (nginx rewrite in a location).
+  repeated Rewrite rewrites = 3;
+  // Nested locations, only under prefix routes. When this route is the
+  // longest prefix, its children are searched first with the same order; an
+  // exact or regex match among them wins outright, a prefix match replaces
+  // this route but still lets this level's regexes run unless this route is
+  // PREFIX_PRIORITY (nginx ngx_http_core_find_location).
+  repeated Route children = 4;
+  // error_page for responses of this route. Like nginx, a route without its
+  // own inherits the site's; the control plane resolves that.
+  repeated ErrorPage error_pages = 5;
 }
 
 // PathMatch is one nginx location, matched against the normalized path in
@@ -80,12 +148,40 @@ message Action {
   oneof kind {
     StaticAction static = 1;
     ProxyAction proxy = 2;
+    ReturnAction return = 3;
+  }
+}
+
+// ReturnAction is nginx return. For 301, 302, 303, 307 and 308 text is the
+// Location; a path is made absolute with the request host and port. For other
+// codes it is the body. A code of 400 or more without text answers like an
+// error, so ErrorPage applies. 444 closes the connection without a response.
+message ReturnAction {
+  uint32 status = 1;
+  // Template.
+  string text = 2;
+}
+
+// TryFiles is nginx try_files: the first file that exists under the static
+// root is served; a name ending in "/" matches a directory. Otherwise the
+// fallback applies.
+message TryFiles {
+  // Templates, for example "$uri" and "$uri/".
+  repeated string files = 1;
+  oneof fallback {
+    // Internal redirect, for example "/index.html" or "/index.php?$args".
+    string uri = 2;
+    // "=404"
+    uint32 status = 3;
+    // "@name": index into Site.named_routes.
+    uint32 named = 4;
   }
 }
 
 message StaticAction {
   string root = 1;
   repeated string index = 2;
+  TryFiles try_files = 3;
 }
 
 message ProxyAction {

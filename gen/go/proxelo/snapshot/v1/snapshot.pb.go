@@ -21,6 +21,65 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Rewrite_Flag int32
+
+const (
+	// No flag: continue with the next rewrite; the route is chosen again
+	// afterwards if the path changed.
+	Rewrite_FLAG_UNSPECIFIED Rewrite_Flag = 0
+	Rewrite_FLAG_LAST        Rewrite_Flag = 1
+	Rewrite_FLAG_BREAK       Rewrite_Flag = 2
+	// 302
+	Rewrite_FLAG_REDIRECT Rewrite_Flag = 3
+	// 301
+	Rewrite_FLAG_PERMANENT Rewrite_Flag = 4
+)
+
+// Enum value maps for Rewrite_Flag.
+var (
+	Rewrite_Flag_name = map[int32]string{
+		0: "FLAG_UNSPECIFIED",
+		1: "FLAG_LAST",
+		2: "FLAG_BREAK",
+		3: "FLAG_REDIRECT",
+		4: "FLAG_PERMANENT",
+	}
+	Rewrite_Flag_value = map[string]int32{
+		"FLAG_UNSPECIFIED": 0,
+		"FLAG_LAST":        1,
+		"FLAG_BREAK":       2,
+		"FLAG_REDIRECT":    3,
+		"FLAG_PERMANENT":   4,
+	}
+)
+
+func (x Rewrite_Flag) Enum() *Rewrite_Flag {
+	p := new(Rewrite_Flag)
+	*p = x
+	return p
+}
+
+func (x Rewrite_Flag) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Rewrite_Flag) Descriptor() protoreflect.EnumDescriptor {
+	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[0].Descriptor()
+}
+
+func (Rewrite_Flag) Type() protoreflect.EnumType {
+	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[0]
+}
+
+func (x Rewrite_Flag) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Rewrite_Flag.Descriptor instead.
+func (Rewrite_Flag) EnumDescriptor() ([]byte, []int) {
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{3, 0}
+}
+
 type HostMatch_Kind int32
 
 const (
@@ -61,11 +120,11 @@ func (x HostMatch_Kind) String() string {
 }
 
 func (HostMatch_Kind) Descriptor() protoreflect.EnumDescriptor {
-	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[0].Descriptor()
+	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[1].Descriptor()
 }
 
 func (HostMatch_Kind) Type() protoreflect.EnumType {
-	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[0]
+	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[1]
 }
 
 func (x HostMatch_Kind) Number() protoreflect.EnumNumber {
@@ -74,7 +133,7 @@ func (x HostMatch_Kind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use HostMatch_Kind.Descriptor instead.
 func (HostMatch_Kind) EnumDescriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{3, 0}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{5, 0}
 }
 
 type PathMatch_Kind int32
@@ -124,11 +183,11 @@ func (x PathMatch_Kind) String() string {
 }
 
 func (PathMatch_Kind) Descriptor() protoreflect.EnumDescriptor {
-	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[1].Descriptor()
+	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[2].Descriptor()
 }
 
 func (PathMatch_Kind) Type() protoreflect.EnumType {
-	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[1]
+	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[2]
 }
 
 func (x PathMatch_Kind) Number() protoreflect.EnumNumber {
@@ -137,7 +196,7 @@ func (x PathMatch_Kind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PathMatch_Kind.Descriptor instead.
 func (PathMatch_Kind) EnumDescriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{5, 0}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{7, 0}
 }
 
 type Upstream_Balancing int32
@@ -170,11 +229,11 @@ func (x Upstream_Balancing) String() string {
 }
 
 func (Upstream_Balancing) Descriptor() protoreflect.EnumDescriptor {
-	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[2].Descriptor()
+	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[3].Descriptor()
 }
 
 func (Upstream_Balancing) Type() protoreflect.EnumType {
-	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[2]
+	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[3]
 }
 
 func (x Upstream_Balancing) Number() protoreflect.EnumNumber {
@@ -183,7 +242,7 @@ func (x Upstream_Balancing) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Upstream_Balancing.Descriptor instead.
 func (Upstream_Balancing) EnumDescriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{9, 0}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{13, 0}
 }
 
 // Snapshot is a fully resolved, immutable configuration for the proxy.
@@ -336,10 +395,24 @@ func (x *Listener) GetDefaultSite() uint32 {
 }
 
 type Site struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Listeners     []uint32               `protobuf:"varint,1,rep,packed,name=listeners,proto3" json:"listeners,omitempty"`
-	Hostnames     []*HostMatch           `protobuf:"bytes,2,rep,name=hostnames,proto3" json:"hostnames,omitempty"`
-	Routes        []*Route               `protobuf:"bytes,3,rep,name=routes,proto3" json:"routes,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Listeners []uint32               `protobuf:"varint,1,rep,packed,name=listeners,proto3" json:"listeners,omitempty"`
+	Hostnames []*HostMatch           `protobuf:"bytes,2,rep,name=hostnames,proto3" json:"hostnames,omitempty"`
+	Routes    []*Route               `protobuf:"bytes,3,rep,name=routes,proto3" json:"routes,omitempty"`
+	// Server-level rewrites (nginx rewrite in a server block), run before the
+	// route is chosen. They run again after an internal redirect by an index
+	// file, try_files or error_page, but not after a route's "rewrite last",
+	// as in nginx.
+	Rewrites []*Rewrite `protobuf:"bytes,4,rep,name=rewrites,proto3" json:"rewrites,omitempty"`
+	// error_page for responses produced before a route is chosen.
+	ErrorPages []*ErrorPage `protobuf:"bytes,5,rep,name=error_pages,json=errorPages,proto3" json:"error_pages,omitempty"`
+	// Server-level return, after the rewrites unless one of them stopped with
+	// last or break.
+	Return *ReturnAction `protobuf:"bytes,6,opt,name=return,proto3" json:"return,omitempty"`
+	// nginx named locations (@name): reachable only from TryFiles and
+	// ErrorPage, never by path. Their path, children and rewrites' last flag
+	// do not apply.
+	NamedRoutes   []*Route `protobuf:"bytes,7,rep,name=named_routes,json=namedRoutes,proto3" json:"named_routes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -395,6 +468,204 @@ func (x *Site) GetRoutes() []*Route {
 	return nil
 }
 
+func (x *Site) GetRewrites() []*Rewrite {
+	if x != nil {
+		return x.Rewrites
+	}
+	return nil
+}
+
+func (x *Site) GetErrorPages() []*ErrorPage {
+	if x != nil {
+		return x.ErrorPages
+	}
+	return nil
+}
+
+func (x *Site) GetReturn() *ReturnAction {
+	if x != nil {
+		return x.Return
+	}
+	return nil
+}
+
+func (x *Site) GetNamedRoutes() []*Route {
+	if x != nil {
+		return x.NamedRoutes
+	}
+	return nil
+}
+
+// Rewrite is one nginx rewrite directive.
+type Rewrite struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// PCRE2 pattern matched against the normalized path.
+	Regex string `protobuf:"bytes,1,opt,name=regex,proto3" json:"regex,omitempty"`
+	// Template. A result starting with http://, https:// or $scheme redirects
+	// with 302. A "?" starts new arguments; the old ones are appended unless
+	// the replacement ends with "?".
+	Replacement   string       `protobuf:"bytes,2,opt,name=replacement,proto3" json:"replacement,omitempty"`
+	Flag          Rewrite_Flag `protobuf:"varint,3,opt,name=flag,proto3,enum=proxelo.snapshot.v1.Rewrite_Flag" json:"flag,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Rewrite) Reset() {
+	*x = Rewrite{}
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Rewrite) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Rewrite) ProtoMessage() {}
+
+func (x *Rewrite) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Rewrite.ProtoReflect.Descriptor instead.
+func (*Rewrite) Descriptor() ([]byte, []int) {
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Rewrite) GetRegex() string {
+	if x != nil {
+		return x.Regex
+	}
+	return ""
+}
+
+func (x *Rewrite) GetReplacement() string {
+	if x != nil {
+		return x.Replacement
+	}
+	return ""
+}
+
+func (x *Rewrite) GetFlag() Rewrite_Flag {
+	if x != nil {
+		return x.Flag
+	}
+	return Rewrite_FLAG_UNSPECIFIED
+}
+
+// ErrorPage is one nginx error_page directive. It applies to responses the
+// proxy produces itself (not to upstream responses), once per request.
+type ErrorPage struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Codes []uint32               `protobuf:"varint,1,rep,packed,name=codes,proto3" json:"codes,omitempty"`
+	// Types that are valid to be assigned to Target:
+	//
+	//	*ErrorPage_Uri
+	//	*ErrorPage_Named
+	Target isErrorPage_Target `protobuf_oneof:"target"`
+	// Unset: answer with the original code. 0: answer with the status of the
+	// redirected request ("error_page 404 = /x"). Otherwise this code.
+	Status        *uint32 `protobuf:"varint,3,opt,name=status,proto3,oneof" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ErrorPage) Reset() {
+	*x = ErrorPage{}
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ErrorPage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErrorPage) ProtoMessage() {}
+
+func (x *ErrorPage) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErrorPage.ProtoReflect.Descriptor instead.
+func (*ErrorPage) Descriptor() ([]byte, []int) {
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ErrorPage) GetCodes() []uint32 {
+	if x != nil {
+		return x.Codes
+	}
+	return nil
+}
+
+func (x *ErrorPage) GetTarget() isErrorPage_Target {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+func (x *ErrorPage) GetUri() string {
+	if x != nil {
+		if x, ok := x.Target.(*ErrorPage_Uri); ok {
+			return x.Uri
+		}
+	}
+	return ""
+}
+
+func (x *ErrorPage) GetNamed() uint32 {
+	if x != nil {
+		if x, ok := x.Target.(*ErrorPage_Named); ok {
+			return x.Named
+		}
+	}
+	return 0
+}
+
+func (x *ErrorPage) GetStatus() uint32 {
+	if x != nil && x.Status != nil {
+		return *x.Status
+	}
+	return 0
+}
+
+type isErrorPage_Target interface {
+	isErrorPage_Target()
+}
+
+type ErrorPage_Uri struct {
+	// Template. A path is an internal redirect (method becomes GET unless
+	// HEAD); an absolute http(s) URL is a redirect with status, or 302.
+	Uri string `protobuf:"bytes,2,opt,name=uri,proto3,oneof"`
+}
+
+type ErrorPage_Named struct {
+	// Index into Site.named_routes.
+	Named uint32 `protobuf:"varint,4,opt,name=named,proto3,oneof"`
+}
+
+func (*ErrorPage_Uri) isErrorPage_Target() {}
+
+func (*ErrorPage_Named) isErrorPage_Target() {}
+
 // HostMatch is one nginx server_name. A listener picks the site by exact
 // name, then the longest leading wildcard, then the longest trailing
 // wildcard, then the first matching regex in snapshot order, then
@@ -409,7 +680,7 @@ type HostMatch struct {
 
 func (x *HostMatch) Reset() {
 	*x = HostMatch{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[3]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -421,7 +692,7 @@ func (x *HostMatch) String() string {
 func (*HostMatch) ProtoMessage() {}
 
 func (x *HostMatch) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[3]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -434,7 +705,7 @@ func (x *HostMatch) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HostMatch.ProtoReflect.Descriptor instead.
 func (*HostMatch) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{3}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *HostMatch) GetKind() HostMatch_Kind {
@@ -452,16 +723,27 @@ func (x *HostMatch) GetValue() string {
 }
 
 type Route struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Path          *PathMatch             `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	Action        *Action                `protobuf:"bytes,2,opt,name=action,proto3" json:"action,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Path   *PathMatch             `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
+	Action *Action                `protobuf:"bytes,2,opt,name=action,proto3" json:"action,omitempty"`
+	// Run in order after the route is chosen (nginx rewrite in a location).
+	Rewrites []*Rewrite `protobuf:"bytes,3,rep,name=rewrites,proto3" json:"rewrites,omitempty"`
+	// Nested locations, only under prefix routes. When this route is the
+	// longest prefix, its children are searched first with the same order; an
+	// exact or regex match among them wins outright, a prefix match replaces
+	// this route but still lets this level's regexes run unless this route is
+	// PREFIX_PRIORITY (nginx ngx_http_core_find_location).
+	Children []*Route `protobuf:"bytes,4,rep,name=children,proto3" json:"children,omitempty"`
+	// error_page for responses of this route. Like nginx, a route without its
+	// own inherits the site's; the control plane resolves that.
+	ErrorPages    []*ErrorPage `protobuf:"bytes,5,rep,name=error_pages,json=errorPages,proto3" json:"error_pages,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Route) Reset() {
 	*x = Route{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[4]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -473,7 +755,7 @@ func (x *Route) String() string {
 func (*Route) ProtoMessage() {}
 
 func (x *Route) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[4]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -486,7 +768,7 @@ func (x *Route) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Route.ProtoReflect.Descriptor instead.
 func (*Route) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{4}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Route) GetPath() *PathMatch {
@@ -499,6 +781,27 @@ func (x *Route) GetPath() *PathMatch {
 func (x *Route) GetAction() *Action {
 	if x != nil {
 		return x.Action
+	}
+	return nil
+}
+
+func (x *Route) GetRewrites() []*Rewrite {
+	if x != nil {
+		return x.Rewrites
+	}
+	return nil
+}
+
+func (x *Route) GetChildren() []*Route {
+	if x != nil {
+		return x.Children
+	}
+	return nil
+}
+
+func (x *Route) GetErrorPages() []*ErrorPage {
+	if x != nil {
+		return x.ErrorPages
 	}
 	return nil
 }
@@ -517,7 +820,7 @@ type PathMatch struct {
 
 func (x *PathMatch) Reset() {
 	*x = PathMatch{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[5]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -529,7 +832,7 @@ func (x *PathMatch) String() string {
 func (*PathMatch) ProtoMessage() {}
 
 func (x *PathMatch) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[5]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -542,7 +845,7 @@ func (x *PathMatch) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PathMatch.ProtoReflect.Descriptor instead.
 func (*PathMatch) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{5}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *PathMatch) GetKind() PathMatch_Kind {
@@ -565,6 +868,7 @@ type Action struct {
 	//
 	//	*Action_Static
 	//	*Action_Proxy
+	//	*Action_Return
 	Kind          isAction_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -572,7 +876,7 @@ type Action struct {
 
 func (x *Action) Reset() {
 	*x = Action{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[6]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -584,7 +888,7 @@ func (x *Action) String() string {
 func (*Action) ProtoMessage() {}
 
 func (x *Action) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[6]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -597,7 +901,7 @@ func (x *Action) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Action.ProtoReflect.Descriptor instead.
 func (*Action) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{6}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Action) GetKind() isAction_Kind {
@@ -625,6 +929,15 @@ func (x *Action) GetProxy() *ProxyAction {
 	return nil
 }
 
+func (x *Action) GetReturn() *ReturnAction {
+	if x != nil {
+		if x, ok := x.Kind.(*Action_Return); ok {
+			return x.Return
+		}
+	}
+	return nil
+}
+
 type isAction_Kind interface {
 	isAction_Kind()
 }
@@ -637,21 +950,198 @@ type Action_Proxy struct {
 	Proxy *ProxyAction `protobuf:"bytes,2,opt,name=proxy,proto3,oneof"`
 }
 
+type Action_Return struct {
+	Return *ReturnAction `protobuf:"bytes,3,opt,name=return,proto3,oneof"`
+}
+
 func (*Action_Static) isAction_Kind() {}
 
 func (*Action_Proxy) isAction_Kind() {}
+
+func (*Action_Return) isAction_Kind() {}
+
+// ReturnAction is nginx return. For 301, 302, 303, 307 and 308 text is the
+// Location; a path is made absolute with the request host and port. For other
+// codes it is the body. A code of 400 or more without text answers like an
+// error, so ErrorPage applies. 444 closes the connection without a response.
+type ReturnAction struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Status uint32                 `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	// Template.
+	Text          string `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReturnAction) Reset() {
+	*x = ReturnAction{}
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReturnAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReturnAction) ProtoMessage() {}
+
+func (x *ReturnAction) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReturnAction.ProtoReflect.Descriptor instead.
+func (*ReturnAction) Descriptor() ([]byte, []int) {
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ReturnAction) GetStatus() uint32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *ReturnAction) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+// TryFiles is nginx try_files: the first file that exists under the static
+// root is served; a name ending in "/" matches a directory. Otherwise the
+// fallback applies.
+type TryFiles struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Templates, for example "$uri" and "$uri/".
+	Files []string `protobuf:"bytes,1,rep,name=files,proto3" json:"files,omitempty"`
+	// Types that are valid to be assigned to Fallback:
+	//
+	//	*TryFiles_Uri
+	//	*TryFiles_Status
+	//	*TryFiles_Named
+	Fallback      isTryFiles_Fallback `protobuf_oneof:"fallback"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TryFiles) Reset() {
+	*x = TryFiles{}
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TryFiles) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TryFiles) ProtoMessage() {}
+
+func (x *TryFiles) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TryFiles.ProtoReflect.Descriptor instead.
+func (*TryFiles) Descriptor() ([]byte, []int) {
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *TryFiles) GetFiles() []string {
+	if x != nil {
+		return x.Files
+	}
+	return nil
+}
+
+func (x *TryFiles) GetFallback() isTryFiles_Fallback {
+	if x != nil {
+		return x.Fallback
+	}
+	return nil
+}
+
+func (x *TryFiles) GetUri() string {
+	if x != nil {
+		if x, ok := x.Fallback.(*TryFiles_Uri); ok {
+			return x.Uri
+		}
+	}
+	return ""
+}
+
+func (x *TryFiles) GetStatus() uint32 {
+	if x != nil {
+		if x, ok := x.Fallback.(*TryFiles_Status); ok {
+			return x.Status
+		}
+	}
+	return 0
+}
+
+func (x *TryFiles) GetNamed() uint32 {
+	if x != nil {
+		if x, ok := x.Fallback.(*TryFiles_Named); ok {
+			return x.Named
+		}
+	}
+	return 0
+}
+
+type isTryFiles_Fallback interface {
+	isTryFiles_Fallback()
+}
+
+type TryFiles_Uri struct {
+	// Internal redirect, for example "/index.html" or "/index.php?$args".
+	Uri string `protobuf:"bytes,2,opt,name=uri,proto3,oneof"`
+}
+
+type TryFiles_Status struct {
+	// "=404"
+	Status uint32 `protobuf:"varint,3,opt,name=status,proto3,oneof"`
+}
+
+type TryFiles_Named struct {
+	// "@name": index into Site.named_routes.
+	Named uint32 `protobuf:"varint,4,opt,name=named,proto3,oneof"`
+}
+
+func (*TryFiles_Uri) isTryFiles_Fallback() {}
+
+func (*TryFiles_Status) isTryFiles_Fallback() {}
+
+func (*TryFiles_Named) isTryFiles_Fallback() {}
 
 type StaticAction struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Root          string                 `protobuf:"bytes,1,opt,name=root,proto3" json:"root,omitempty"`
 	Index         []string               `protobuf:"bytes,2,rep,name=index,proto3" json:"index,omitempty"`
+	TryFiles      *TryFiles              `protobuf:"bytes,3,opt,name=try_files,json=tryFiles,proto3" json:"try_files,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *StaticAction) Reset() {
 	*x = StaticAction{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[7]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -663,7 +1153,7 @@ func (x *StaticAction) String() string {
 func (*StaticAction) ProtoMessage() {}
 
 func (x *StaticAction) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[7]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -676,7 +1166,7 @@ func (x *StaticAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StaticAction.ProtoReflect.Descriptor instead.
 func (*StaticAction) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{7}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *StaticAction) GetRoot() string {
@@ -693,6 +1183,13 @@ func (x *StaticAction) GetIndex() []string {
 	return nil
 }
 
+func (x *StaticAction) GetTryFiles() *TryFiles {
+	if x != nil {
+		return x.TryFiles
+	}
+	return nil
+}
+
 type ProxyAction struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Index into Snapshot.upstreams.
@@ -703,7 +1200,7 @@ type ProxyAction struct {
 
 func (x *ProxyAction) Reset() {
 	*x = ProxyAction{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[8]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -715,7 +1212,7 @@ func (x *ProxyAction) String() string {
 func (*ProxyAction) ProtoMessage() {}
 
 func (x *ProxyAction) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[8]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -728,7 +1225,7 @@ func (x *ProxyAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProxyAction.ProtoReflect.Descriptor instead.
 func (*ProxyAction) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{8}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ProxyAction) GetUpstream() uint32 {
@@ -749,7 +1246,7 @@ type Upstream struct {
 
 func (x *Upstream) Reset() {
 	*x = Upstream{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[9]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -761,7 +1258,7 @@ func (x *Upstream) String() string {
 func (*Upstream) ProtoMessage() {}
 
 func (x *Upstream) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[9]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -774,7 +1271,7 @@ func (x *Upstream) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Upstream.ProtoReflect.Descriptor instead.
 func (*Upstream) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{9}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Upstream) GetTargets() []*Target {
@@ -809,7 +1306,7 @@ type Target struct {
 
 func (x *Target) Reset() {
 	*x = Target{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[10]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -821,7 +1318,7 @@ func (x *Target) String() string {
 func (*Target) ProtoMessage() {}
 
 func (x *Target) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[10]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -834,7 +1331,7 @@ func (x *Target) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Target.ProtoReflect.Descriptor instead.
 func (*Target) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{10}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *Target) GetAddress() string {
@@ -868,11 +1365,34 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"reuse_port\x18\x02 \x01(\bR\treusePort\x12\x18\n" +
 	"\abacklog\x18\x03 \x01(\rR\abacklog\x12&\n" +
 	"\fdefault_site\x18\x04 \x01(\rH\x00R\vdefaultSite\x88\x01\x01B\x0f\n" +
-	"\r_default_site\"\x96\x01\n" +
+	"\r_default_site\"\x8b\x03\n" +
 	"\x04Site\x12\x1c\n" +
 	"\tlisteners\x18\x01 \x03(\rR\tlisteners\x12<\n" +
 	"\thostnames\x18\x02 \x03(\v2\x1e.proxelo.snapshot.v1.HostMatchR\thostnames\x122\n" +
-	"\x06routes\x18\x03 \x03(\v2\x1a.proxelo.snapshot.v1.RouteR\x06routes\"\xab\x01\n" +
+	"\x06routes\x18\x03 \x03(\v2\x1a.proxelo.snapshot.v1.RouteR\x06routes\x128\n" +
+	"\brewrites\x18\x04 \x03(\v2\x1c.proxelo.snapshot.v1.RewriteR\brewrites\x12?\n" +
+	"\verror_pages\x18\x05 \x03(\v2\x1e.proxelo.snapshot.v1.ErrorPageR\n" +
+	"errorPages\x129\n" +
+	"\x06return\x18\x06 \x01(\v2!.proxelo.snapshot.v1.ReturnActionR\x06return\x12=\n" +
+	"\fnamed_routes\x18\a \x03(\v2\x1a.proxelo.snapshot.v1.RouteR\vnamedRoutes\"\xdc\x01\n" +
+	"\aRewrite\x12\x14\n" +
+	"\x05regex\x18\x01 \x01(\tR\x05regex\x12 \n" +
+	"\vreplacement\x18\x02 \x01(\tR\vreplacement\x125\n" +
+	"\x04flag\x18\x03 \x01(\x0e2!.proxelo.snapshot.v1.Rewrite.FlagR\x04flag\"b\n" +
+	"\x04Flag\x12\x14\n" +
+	"\x10FLAG_UNSPECIFIED\x10\x00\x12\r\n" +
+	"\tFLAG_LAST\x10\x01\x12\x0e\n" +
+	"\n" +
+	"FLAG_BREAK\x10\x02\x12\x11\n" +
+	"\rFLAG_REDIRECT\x10\x03\x12\x12\n" +
+	"\x0eFLAG_PERMANENT\x10\x04\"\x7f\n" +
+	"\tErrorPage\x12\x14\n" +
+	"\x05codes\x18\x01 \x03(\rR\x05codes\x12\x12\n" +
+	"\x03uri\x18\x02 \x01(\tH\x00R\x03uri\x12\x16\n" +
+	"\x05named\x18\x04 \x01(\rH\x00R\x05named\x12\x1b\n" +
+	"\x06status\x18\x03 \x01(\rH\x01R\x06status\x88\x01\x01B\b\n" +
+	"\x06targetB\t\n" +
+	"\a_status\"\xab\x01\n" +
 	"\tHostMatch\x127\n" +
 	"\x04kind\x18\x01 \x01(\x0e2#.proxelo.snapshot.v1.HostMatch.KindR\x04kind\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value\"O\n" +
@@ -882,10 +1402,14 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"KIND_EXACT\x10\x01\x12\x11\n" +
 	"\rKIND_WILDCARD\x10\x02\x12\x0e\n" +
 	"\n" +
-	"KIND_REGEX\x10\x03\"p\n" +
+	"KIND_REGEX\x10\x03\"\xa3\x02\n" +
 	"\x05Route\x122\n" +
 	"\x04path\x18\x01 \x01(\v2\x1e.proxelo.snapshot.v1.PathMatchR\x04path\x123\n" +
-	"\x06action\x18\x02 \x01(\v2\x1b.proxelo.snapshot.v1.ActionR\x06action\"\xd6\x01\n" +
+	"\x06action\x18\x02 \x01(\v2\x1b.proxelo.snapshot.v1.ActionR\x06action\x128\n" +
+	"\brewrites\x18\x03 \x03(\v2\x1c.proxelo.snapshot.v1.RewriteR\brewrites\x126\n" +
+	"\bchildren\x18\x04 \x03(\v2\x1a.proxelo.snapshot.v1.RouteR\bchildren\x12?\n" +
+	"\verror_pages\x18\x05 \x03(\v2\x1e.proxelo.snapshot.v1.ErrorPageR\n" +
+	"errorPages\"\xd6\x01\n" +
 	"\tPathMatch\x127\n" +
 	"\x04kind\x18\x01 \x01(\x0e2#.proxelo.snapshot.v1.PathMatch.KindR\x04kind\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value\"z\n" +
@@ -897,14 +1421,26 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\x14KIND_PREFIX_PRIORITY\x10\x03\x12\x0e\n" +
 	"\n" +
 	"KIND_REGEX\x10\x04\x12\x11\n" +
-	"\rKIND_REGEX_CI\x10\x05\"\x87\x01\n" +
+	"\rKIND_REGEX_CI\x10\x05\"\xc4\x01\n" +
 	"\x06Action\x12;\n" +
 	"\x06static\x18\x01 \x01(\v2!.proxelo.snapshot.v1.StaticActionH\x00R\x06static\x128\n" +
-	"\x05proxy\x18\x02 \x01(\v2 .proxelo.snapshot.v1.ProxyActionH\x00R\x05proxyB\x06\n" +
-	"\x04kind\"8\n" +
+	"\x05proxy\x18\x02 \x01(\v2 .proxelo.snapshot.v1.ProxyActionH\x00R\x05proxy\x12;\n" +
+	"\x06return\x18\x03 \x01(\v2!.proxelo.snapshot.v1.ReturnActionH\x00R\x06returnB\x06\n" +
+	"\x04kind\":\n" +
+	"\fReturnAction\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\rR\x06status\x12\x12\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\"r\n" +
+	"\bTryFiles\x12\x14\n" +
+	"\x05files\x18\x01 \x03(\tR\x05files\x12\x12\n" +
+	"\x03uri\x18\x02 \x01(\tH\x00R\x03uri\x12\x18\n" +
+	"\x06status\x18\x03 \x01(\rH\x00R\x06status\x12\x16\n" +
+	"\x05named\x18\x04 \x01(\rH\x00R\x05namedB\n" +
+	"\n" +
+	"\bfallback\"t\n" +
 	"\fStaticAction\x12\x12\n" +
 	"\x04root\x18\x01 \x01(\tR\x04root\x12\x14\n" +
-	"\x05index\x18\x02 \x03(\tR\x05index\")\n" +
+	"\x05index\x18\x02 \x03(\tR\x05index\x12:\n" +
+	"\ttry_files\x18\x03 \x01(\v2\x1d.proxelo.snapshot.v1.TryFilesR\btryFiles\")\n" +
 	"\vProxyAction\x12\x1a\n" +
 	"\bupstream\x18\x01 \x01(\rR\bupstream\"\xf2\x01\n" +
 	"\bUpstream\x125\n" +
@@ -930,43 +1466,58 @@ func file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP() []byte {
 	return file_proxelo_snapshot_v1_snapshot_proto_rawDescData
 }
 
-var file_proxelo_snapshot_v1_snapshot_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_proxelo_snapshot_v1_snapshot_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_proxelo_snapshot_v1_snapshot_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_proxelo_snapshot_v1_snapshot_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_proxelo_snapshot_v1_snapshot_proto_goTypes = []any{
-	(HostMatch_Kind)(0),     // 0: proxelo.snapshot.v1.HostMatch.Kind
-	(PathMatch_Kind)(0),     // 1: proxelo.snapshot.v1.PathMatch.Kind
-	(Upstream_Balancing)(0), // 2: proxelo.snapshot.v1.Upstream.Balancing
-	(*Snapshot)(nil),        // 3: proxelo.snapshot.v1.Snapshot
-	(*Listener)(nil),        // 4: proxelo.snapshot.v1.Listener
-	(*Site)(nil),            // 5: proxelo.snapshot.v1.Site
-	(*HostMatch)(nil),       // 6: proxelo.snapshot.v1.HostMatch
-	(*Route)(nil),           // 7: proxelo.snapshot.v1.Route
-	(*PathMatch)(nil),       // 8: proxelo.snapshot.v1.PathMatch
-	(*Action)(nil),          // 9: proxelo.snapshot.v1.Action
-	(*StaticAction)(nil),    // 10: proxelo.snapshot.v1.StaticAction
-	(*ProxyAction)(nil),     // 11: proxelo.snapshot.v1.ProxyAction
-	(*Upstream)(nil),        // 12: proxelo.snapshot.v1.Upstream
-	(*Target)(nil),          // 13: proxelo.snapshot.v1.Target
+	(Rewrite_Flag)(0),       // 0: proxelo.snapshot.v1.Rewrite.Flag
+	(HostMatch_Kind)(0),     // 1: proxelo.snapshot.v1.HostMatch.Kind
+	(PathMatch_Kind)(0),     // 2: proxelo.snapshot.v1.PathMatch.Kind
+	(Upstream_Balancing)(0), // 3: proxelo.snapshot.v1.Upstream.Balancing
+	(*Snapshot)(nil),        // 4: proxelo.snapshot.v1.Snapshot
+	(*Listener)(nil),        // 5: proxelo.snapshot.v1.Listener
+	(*Site)(nil),            // 6: proxelo.snapshot.v1.Site
+	(*Rewrite)(nil),         // 7: proxelo.snapshot.v1.Rewrite
+	(*ErrorPage)(nil),       // 8: proxelo.snapshot.v1.ErrorPage
+	(*HostMatch)(nil),       // 9: proxelo.snapshot.v1.HostMatch
+	(*Route)(nil),           // 10: proxelo.snapshot.v1.Route
+	(*PathMatch)(nil),       // 11: proxelo.snapshot.v1.PathMatch
+	(*Action)(nil),          // 12: proxelo.snapshot.v1.Action
+	(*ReturnAction)(nil),    // 13: proxelo.snapshot.v1.ReturnAction
+	(*TryFiles)(nil),        // 14: proxelo.snapshot.v1.TryFiles
+	(*StaticAction)(nil),    // 15: proxelo.snapshot.v1.StaticAction
+	(*ProxyAction)(nil),     // 16: proxelo.snapshot.v1.ProxyAction
+	(*Upstream)(nil),        // 17: proxelo.snapshot.v1.Upstream
+	(*Target)(nil),          // 18: proxelo.snapshot.v1.Target
 }
 var file_proxelo_snapshot_v1_snapshot_proto_depIdxs = []int32{
-	4,  // 0: proxelo.snapshot.v1.Snapshot.listeners:type_name -> proxelo.snapshot.v1.Listener
-	5,  // 1: proxelo.snapshot.v1.Snapshot.sites:type_name -> proxelo.snapshot.v1.Site
-	12, // 2: proxelo.snapshot.v1.Snapshot.upstreams:type_name -> proxelo.snapshot.v1.Upstream
-	6,  // 3: proxelo.snapshot.v1.Site.hostnames:type_name -> proxelo.snapshot.v1.HostMatch
-	7,  // 4: proxelo.snapshot.v1.Site.routes:type_name -> proxelo.snapshot.v1.Route
-	0,  // 5: proxelo.snapshot.v1.HostMatch.kind:type_name -> proxelo.snapshot.v1.HostMatch.Kind
-	8,  // 6: proxelo.snapshot.v1.Route.path:type_name -> proxelo.snapshot.v1.PathMatch
-	9,  // 7: proxelo.snapshot.v1.Route.action:type_name -> proxelo.snapshot.v1.Action
-	1,  // 8: proxelo.snapshot.v1.PathMatch.kind:type_name -> proxelo.snapshot.v1.PathMatch.Kind
-	10, // 9: proxelo.snapshot.v1.Action.static:type_name -> proxelo.snapshot.v1.StaticAction
-	11, // 10: proxelo.snapshot.v1.Action.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
-	13, // 11: proxelo.snapshot.v1.Upstream.targets:type_name -> proxelo.snapshot.v1.Target
-	2,  // 12: proxelo.snapshot.v1.Upstream.balancing:type_name -> proxelo.snapshot.v1.Upstream.Balancing
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	5,  // 0: proxelo.snapshot.v1.Snapshot.listeners:type_name -> proxelo.snapshot.v1.Listener
+	6,  // 1: proxelo.snapshot.v1.Snapshot.sites:type_name -> proxelo.snapshot.v1.Site
+	17, // 2: proxelo.snapshot.v1.Snapshot.upstreams:type_name -> proxelo.snapshot.v1.Upstream
+	9,  // 3: proxelo.snapshot.v1.Site.hostnames:type_name -> proxelo.snapshot.v1.HostMatch
+	10, // 4: proxelo.snapshot.v1.Site.routes:type_name -> proxelo.snapshot.v1.Route
+	7,  // 5: proxelo.snapshot.v1.Site.rewrites:type_name -> proxelo.snapshot.v1.Rewrite
+	8,  // 6: proxelo.snapshot.v1.Site.error_pages:type_name -> proxelo.snapshot.v1.ErrorPage
+	13, // 7: proxelo.snapshot.v1.Site.return:type_name -> proxelo.snapshot.v1.ReturnAction
+	10, // 8: proxelo.snapshot.v1.Site.named_routes:type_name -> proxelo.snapshot.v1.Route
+	0,  // 9: proxelo.snapshot.v1.Rewrite.flag:type_name -> proxelo.snapshot.v1.Rewrite.Flag
+	1,  // 10: proxelo.snapshot.v1.HostMatch.kind:type_name -> proxelo.snapshot.v1.HostMatch.Kind
+	11, // 11: proxelo.snapshot.v1.Route.path:type_name -> proxelo.snapshot.v1.PathMatch
+	12, // 12: proxelo.snapshot.v1.Route.action:type_name -> proxelo.snapshot.v1.Action
+	7,  // 13: proxelo.snapshot.v1.Route.rewrites:type_name -> proxelo.snapshot.v1.Rewrite
+	10, // 14: proxelo.snapshot.v1.Route.children:type_name -> proxelo.snapshot.v1.Route
+	8,  // 15: proxelo.snapshot.v1.Route.error_pages:type_name -> proxelo.snapshot.v1.ErrorPage
+	2,  // 16: proxelo.snapshot.v1.PathMatch.kind:type_name -> proxelo.snapshot.v1.PathMatch.Kind
+	15, // 17: proxelo.snapshot.v1.Action.static:type_name -> proxelo.snapshot.v1.StaticAction
+	16, // 18: proxelo.snapshot.v1.Action.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
+	13, // 19: proxelo.snapshot.v1.Action.return:type_name -> proxelo.snapshot.v1.ReturnAction
+	14, // 20: proxelo.snapshot.v1.StaticAction.try_files:type_name -> proxelo.snapshot.v1.TryFiles
+	18, // 21: proxelo.snapshot.v1.Upstream.targets:type_name -> proxelo.snapshot.v1.Target
+	3,  // 22: proxelo.snapshot.v1.Upstream.balancing:type_name -> proxelo.snapshot.v1.Upstream.Balancing
+	23, // [23:23] is the sub-list for method output_type
+	23, // [23:23] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_proxelo_snapshot_v1_snapshot_proto_init() }
@@ -975,17 +1526,27 @@ func file_proxelo_snapshot_v1_snapshot_proto_init() {
 		return
 	}
 	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[1].OneofWrappers = []any{}
-	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[6].OneofWrappers = []any{
+	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[4].OneofWrappers = []any{
+		(*ErrorPage_Uri)(nil),
+		(*ErrorPage_Named)(nil),
+	}
+	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[8].OneofWrappers = []any{
 		(*Action_Static)(nil),
 		(*Action_Proxy)(nil),
+		(*Action_Return)(nil),
+	}
+	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[10].OneofWrappers = []any{
+		(*TryFiles_Uri)(nil),
+		(*TryFiles_Status)(nil),
+		(*TryFiles_Named)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proxelo_snapshot_v1_snapshot_proto_rawDesc), len(file_proxelo_snapshot_v1_snapshot_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   11,
+			NumEnums:      4,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
