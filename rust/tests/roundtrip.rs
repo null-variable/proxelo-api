@@ -16,6 +16,7 @@ fn snapshot_roundtrip() {
                 action: Some(Action {
                     kind: Some(action::Kind::Proxy(ProxyAction { upstream: 0 })),
                 }),
+                ..Default::default()
             }],
             ..Default::default()
         }],
