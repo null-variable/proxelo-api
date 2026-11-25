@@ -22,6 +22,8 @@ message Listener {
   uint32 backlog = 3;
   // Index into Snapshot.sites used when no hostname matches.
   optional uint32 default_site = 4;
+  // Control plane resource ID, for logs, metrics and simulation results.
+  string id = 5;
 }
 
 message Site {
@@ -42,6 +44,8 @@ message Site {
   // ErrorPage, never by path. Their path, children and rewrites' last flag
   // do not apply.
   repeated Route named_routes = 7;
+  // Control plane resource ID.
+  string id = 8;
 }
 
 // Template strings (Rewrite.replacement, ReturnAction.text, TryFiles,
@@ -120,6 +124,43 @@ message Route {
   // error_page for responses of this route. Like nginx, a route without its
   // own inherits the site's; the control plane resolves that.
   repeated ErrorPage error_pages = 5;
+  // Control plane resource ID. A route used in several sites appears in each
+  // with the same ID.
+  string id = 6;
+  // Conditions checked after the path selected this route, all of which must
+  // hold. Several routes may share one path match when they have conditions:
+  // they are tried in order, then the one without conditions. When none
+  // applies, the path match is treated as not matching this request.
+  // Request methods, uppercase. Empty: any.
+  repeated string methods = 7;
+  repeated ValueMatch headers = 8;
+  // Query arguments, by name.
+  repeated ValueMatch query = 9;
+  // CEL expression over `request`, a proxelo.expr.v1.Request, with the
+  // standard library and the network extension (cidr, ip). Must evaluate to a
+  // bool; an evaluation error counts as false. Empty: none.
+  string expr = 10;
+}
+
+// ValueMatch is one condition on a header (case-insensitive name) or a query
+// argument (case-sensitive name), compared with the raw value as sent. With
+// several values of one name, any matching value satisfies it.
+message ValueMatch {
+  enum Op {
+    OP_UNSPECIFIED = 0;
+    OP_PRESENT = 1;
+    OP_ABSENT = 2;
+    OP_EQUALS = 3;
+    OP_PREFIX = 4;
+    OP_SUFFIX = 5;
+    OP_CONTAINS = 6;
+    // PCRE2 pattern, case-sensitive.
+    OP_REGEX = 7;
+  }
+  string name = 1;
+  Op op = 2;
+  // Unused by PRESENT and ABSENT.
+  string value = 3;
 }
 
 // PathMatch is one nginx location, matched against the normalized path in
@@ -197,6 +238,8 @@ message Upstream {
   repeated Target targets = 1;
   Balancing balancing = 2;
   uint32 keepalive_idle = 3;
+  // Control plane resource ID.
+  string id = 4;
 }
 
 message Target {

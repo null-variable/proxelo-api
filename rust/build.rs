@@ -5,6 +5,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let files = [
         root.join("proxelo/snapshot/v1/snapshot.proto"),
         root.join("proxelo/distrib/v1/distrib.proto"),
+        root.join("proxelo/sim/v1/sim.proto"),
+        root.join("proxelo/expr/v1/expr.proto"),
     ];
     let fds = protox::compile(&files, [&root])?;
     tonic_prost_build::configure()

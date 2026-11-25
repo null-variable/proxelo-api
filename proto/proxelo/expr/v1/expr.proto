@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package proxelo.expr.v1;
+
+option go_package = "github.com/null-variable/proxelo-api/gen/go/proxelo/expr/v1;exprv1";
+
+// Request is the `request` variable of route expressions (Route.expr, CEL).
+// The control plane type-checks expressions against this message; the proxy
+// evaluates them over a map with the same keys and value types.
+message Request {
+  // Uppercase method, "GET".
+  string method = 1;
+  // Normalized path after rewrites ($uri).
+  string path = 2;
+  // Request target as sent ($request_uri).
+  string uri = 3;
+  // Query string without "?" ($args).
+  string args = 4;
+  // Lowercase host without port.
+  string host = 5;
+  // "http" or "https".
+  string scheme = 6;
+  // Client IP address.
+  string remote_addr = 7;
+  // Lowercase header name to value; repeated headers joined with ", ".
+  map<string, string> headers = 8;
+  // Query argument name to its first raw (not percent-decoded) value.
+  map<string, string> query = 9;
+}

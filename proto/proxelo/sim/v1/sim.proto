@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package proxelo.sim.v1;
+
+option go_package = "github.com/null-variable/proxelo-api/gen/go/proxelo/sim/v1;simv1";
+
+// The dry-load helper, `proxelo-proxy sim`, reads SimRequest messages from
+// stdin and writes one SimResponse per request to stdout, each message
+// preceded by its length as a varint (protobuf length-delimited framing). It
+// loads snapshots with the same code as a serving proxy and runs requests
+// through the same phase engine, without sockets: a proxy action reports the
+// upstream instead of connecting, and static files are looked up on the
+// helper's own file system.
+
+message SimRequest {
+  // A serialized proxelo.snapshot.v1.Snapshot. The helper keeps the last
+  // snapshots it built, by hash, so sending the same one again is cheap.
+  bytes snapshot = 1;
+  // Requests to run against it. None: only load the snapshot (validation).
+  repeated HttpRequest requests = 2;
+}
+
+message HttpRequest {
+  // Listener ID the request arrives on. Empty: the first listener.
+  string listener = 1;
+  // Uppercase method. Empty: GET.
+  string method = 2;
+  // Request target as sent, "/path?query".
+  string target = 3;
+  // Request headers, including Host.
+  repeated Header headers = 4;
+  // Client IP address. Empty: 127.0.0.1.
+  string remote_addr = 5;
+}
+
+message Header {
+  string name = 1;
+  string value = 2;
+}
+
+message SimResponse {
+  // Why the snapshot was rejected, in the form a proxy reports it. Requests
+  // are not run then.
+  string error = 1;
+  // One per request, in order.
+  repeated Result results = 2;
+}
+
+message Result {
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    // A response the proxy produces itself: return text or an error page.
+    KIND_RESPONSE = 1;
+    // A redirect with Location.
+    KIND_REDIRECT = 2;
+    // A static file.
+    KIND_FILE = 3;
+    // Proxied to an upstream.
+    KIND_PROXY = 4;
+    // Connection closed without a response (return 444).
+    KIND_CLOSE = 5;
+  }
+  Kind kind = 1;
+  // Response status; for KIND_PROXY the one forced by an error page, or 0
+  // for the upstream's.
+  uint32 status = 2;
+  // Site ID, empty when no site took the request.
+  string site = 3;
+  // ID of the route that produced the outcome, empty for none.
+  string route = 4;
+  // Path and query after rewrites and internal redirects.
+  string uri = 5;
+  // KIND_REDIRECT: the Location.
+  string location = 6;
+  // KIND_RESPONSE: the body of a return; empty for a built-in page.
+  string body = 7;
+  // KIND_FILE: the file path.
+  string file = 8;
+  // KIND_PROXY: upstream ID and the addresses of its targets.
+  string upstream = 9;
+  repeated string targets = 10;
+  // The phases the request went through, in order, for display.
+  repeated string trace = 11;
+}
