@@ -14,9 +14,42 @@ acknowledges the revision.
 | Path | Contents |
 |---|---|
 | `proto/proxelo/snapshot/v1` | `Snapshot`: the resolved configuration a proxy serves |
-| `proto/proxelo/distrib/v1` | `DistributionService`: snapshot push, acknowledgements, proxy hello |
+| `proto/proxelo/distrib/v1` | `DistributionService`: snapshot push, ACME challenges, acknowledgements, traffic counters |
+| `proto/proxelo/sim/v1` | Framing of the `proxelo-proxy sim` helper the control plane uses for dry-loads and request simulation |
+| `proto/proxelo/expr/v1` | `Request`: the variable route CEL expressions see, type-checked by the control plane and evaluated by the proxy |
 | `gen/go` | Generated Go code (committed) |
 | `rust` | Rust crate, generated at build time |
+
+## How the messages are used
+
+**Snapshot.** The control plane resolves everything a proxy would otherwise
+work out per request: references between resources, policy inheritance,
+defaults, and the order in which sites and routes are matched. Objects refer
+to each other by index into the snapshot's lists, never by name. A proxy
+validates a snapshot completely and builds its runtime form before it swaps
+it in, so a snapshot is accepted or rejected as a whole.
+
+**Distribution stream.** The proxy dials the control plane over a Unix socket
+and opens `Sync`:
+
+1. Proxy sends `Hello` with its node ID, version and the revision it serves.
+2. Control plane sends the newest snapshot as `snapshot_data` (serialized
+   bytes, so the proxy can check the SHA-256 hash recorded in them and store
+   exactly those bytes as its last-known-good snapshot), then a new one after
+   every apply or rollback.
+3. Proxy answers each snapshot with `Ack` (applied, or rejected with a
+   reason) and sends `Stats` every few seconds: counters since start, from
+   which the control plane derives error rates while a revision awaits
+   confirmation.
+4. ACME challenges arrive as `Challenges`, replacing the previous set. They
+   are not part of a snapshot and are never persisted.
+
+When the stream ends the proxy keeps serving and dials again with backoff.
+
+**Simulator.** `proxelo-proxy sim` reads length-delimited `SimRequest`
+messages on stdin and writes `SimResponse` messages on stdout. It runs the
+serving engine without sockets, so validation and the request simulator in
+the control plane give the same answers as a live proxy.
 
 ## Usage
 
