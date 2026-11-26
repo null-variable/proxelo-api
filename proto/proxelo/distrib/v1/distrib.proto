@@ -18,6 +18,7 @@ message SyncRequest {
     Hello hello = 1;
     Ack ack = 2;
     Stats stats = 3;
+    TapEvents tap_events = 4;
   }
 }
 
@@ -30,7 +31,69 @@ message SyncResponse {
     // against the bytes and keeps them as the last-known-good snapshot.
     bytes snapshot_data = 3;
     Challenges challenges = 2;
+    TapFilter tap = 4;
   }
+}
+
+// TapFilter selects requests the proxy reports as they finish, for Live
+// Tap. A new filter replaces the previous one; an empty one (no id) stops
+// tapping. Filtering and sampling happen on the proxy so only matching
+// requests reach the control plane. The filter is not persisted: a proxy
+// that reconnects taps nothing until it is sent again.
+message TapFilter {
+  // Identifies the tap; events carry it back.
+  string id = 1;
+  // Requests answered by one of these sites, or any when empty.
+  repeated string site_ids = 2;
+  // Requests answered by one of these routes, or any when empty.
+  repeated string route_ids = 3;
+  // Client address prefixes, CIDR; any when empty.
+  repeated string cidrs = 4;
+  // Report one in sample matching requests; 0 and 1 report all.
+  uint32 sample = 5;
+  // Events per second the proxy sends at most; 0 means 100. Matching
+  // requests beyond it are counted in TapEvents.dropped.
+  uint32 max_per_second = 6;
+  // Request header names (lowercase) whose values are reported. Other
+  // headers are left out.
+  repeated string headers = 7;
+}
+
+// TapEvents is a batch of tapped requests, sent a few times a second.
+message TapEvents {
+  string tap_id = 1;
+  repeated TapEvent events = 2;
+  // Matching requests left out since the last batch by max_per_second.
+  uint64 dropped = 3;
+}
+
+message TapEvent {
+  // Unix time the request finished, in microseconds.
+  int64 time_us = 1;
+  string site_id = 2;
+  // Empty when no route matched.
+  string route_id = 3;
+  string client = 4;
+  string method = 5;
+  string host = 6;
+  // The request target as received.
+  string uri = 7;
+  uint32 status = 8;
+  // Microseconds from the request head to the end of the response.
+  uint64 duration_us = 9;
+  // host:port of the last upstream target tried, if any.
+  string upstream = 10;
+  uint32 upstream_status = 11;
+  uint64 bytes_sent = 12;
+  // Values of the requested headers that the request had.
+  repeated TapHeader headers = 13;
+  // "1.1" or "2".
+  string protocol = 14;
+}
+
+message TapHeader {
+  string name = 1;
+  string value = 2;
 }
 
 // Challenges replaces every ACME challenge the proxy answers. Challenges are
