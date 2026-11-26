@@ -529,7 +529,67 @@ message Action {
     StaticAction static = 1;
     ProxyAction proxy = 2;
     ReturnAction return = 3;
+    GatewayAction gateway = 4;
+    MemcachedAction memcached = 5;
+    GrpcAction grpc = 6;
   }
+}
+
+// GatewayAction passes the request to an application server over FastCGI,
+// uwsgi or SCGI (nginx fastcgi_pass, uwsgi_pass, scgi_pass). The request
+// body is read in full first, so CONTENT_LENGTH is always known. The
+// response is CGI style (a Status header, or a Location without one for
+// 302) or, for uwsgi and SCGI, may start with an HTTP status line.
+// Connections are not reused.
+message GatewayAction {
+  enum Protocol {
+    PROTOCOL_UNSPECIFIED = 0;
+    PROTOCOL_FASTCGI = 1;
+    PROTOCOL_UWSGI = 2;
+    PROTOCOL_SCGI = 3;
+  }
+  Protocol protocol = 1;
+  // Upstream, timeouts and retries, as for proxy.
+  ProxyAction proxy = 2;
+  // Sent in order (fastcgi_param and the like). The control plane includes
+  // the standard set unless told not to.
+  repeated GatewayParam params = 3;
+  // Also send every request header as HTTP_<NAME>, unless a param of that
+  // name is set; repeated headers join with ", " ("; " for Cookie).
+  bool pass_request_headers = 4;
+  // $document_root.
+  string document_root = 5;
+  // Appended to $fastcgi_script_name for a URI ending in "/" (fastcgi_index).
+  string index = 6;
+  // PCRE2 with two captures over $uri: the first is $fastcgi_script_name,
+  // the second $fastcgi_path_info (fastcgi_split_path_info). Empty: the
+  // script name is $uri and the path info empty.
+  string split_path_info = 7;
+}
+
+message GatewayParam {
+  string name = 1;
+  // Template.
+  string value = 2;
+  // Skip the param when the value expands to nothing.
+  bool if_not_empty = 3;
+}
+
+// MemcachedAction answers GET and HEAD with the value stored under key
+// (nginx memcached_pass); a missing key is 404, other methods 405.
+message MemcachedAction {
+  // Upstream, timeouts and retries, as for proxy.
+  ProxyAction proxy = 1;
+  // Template, URI-escaped for memcached. Empty: $uri.
+  string key = 2;
+}
+
+// GrpcAction proxies over HTTP/2 without TLS (nginx grpc_pass grpc://),
+// streaming both ways, with trailers. Connections to a target are shared.
+message GrpcAction {
+  // Upstream, timeouts and retries, as for proxy. Only failures to connect
+  // move on to another target.
+  ProxyAction proxy = 1;
 }
 
 // ReturnAction is nginx return. For 301, 302, 303, 307 and 308 text is the
