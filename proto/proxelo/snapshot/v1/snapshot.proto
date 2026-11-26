@@ -26,6 +26,66 @@ message Snapshot {
   // usable in every template as $name. A lookup's templates may use only
   // the lookups before it.
   repeated Lookup lookups = 10;
+  // L4 proxies (nginx stream server blocks). Their addresses differ from
+  // the listeners' for TCP.
+  repeated Stream streams = 11;
+}
+
+// Stream is one nginx stream server: connections or datagrams on an address
+// are relayed to an upstream. A connection stays on the snapshot it started
+// with.
+message Stream {
+  // Control plane resource ID.
+  string id = 1;
+  // host:port.
+  string address = 2;
+  // UDP instead of TCP: datagrams from one client address form a session.
+  bool udp = 3;
+  bool reuse_port = 4;
+  uint32 backlog = 5;
+  // TLS termination (nginx listen ssl); tls.default_certificate is
+  // required. TCP only.
+  ListenerTls tls = 6;
+  // Read the TLS ClientHello without consuming it (nginx ssl_preread), so
+  // $ssl_preread_server_name, $ssl_preread_alpn_protocols and
+  // $ssl_preread_protocol are set and routes match the SNI name. TCP only.
+  bool ssl_preread = 7;
+  // The first route whose server_names match the SNI name (from the
+  // handshake or the preread) serves the session; a route without names
+  // matches every session.
+  repeated StreamRoute routes = 8;
+  // nginx allow and deny, as Access.rules. A denied session ends with
+  // $status 403.
+  repeated AccessRule rules = 9;
+  // Indexes into Snapshot.conn_zones; each session counts as one. Over the
+  // limit the session ends with $status 503.
+  repeated uint32 conn_limits = 10;
+  // Index into Snapshot.access_logs, written when a session ends.
+  optional uint32 access_log = 11;
+  // Send a PROXY protocol v1 header to the upstream first (nginx
+  // proxy_protocol on). TCP only.
+  bool proxy_protocol = 12;
+  // 0: 60s (nginx proxy_connect_timeout).
+  uint32 connect_timeout_ms = 13;
+  // Idle time between two reads or writes on either side, after which the
+  // session ends. 0: 10m (nginx proxy_timeout).
+  uint32 timeout_ms = 14;
+  // UDP: datagrams expected back per datagram sent; the session ends after
+  // them (nginx proxy_responses). Unset: until the timeout.
+  optional uint32 responses = 15;
+  // Do not try another target when connecting fails (nginx
+  // proxy_next_upstream off).
+  bool no_next_upstream = 16;
+  // Targets tried at most. 0: all (nginx proxy_next_upstream_tries).
+  uint32 tries = 17;
+}
+
+message StreamRoute {
+  // Matched against the lowercase SNI name like Site.hostnames. Empty: any
+  // session, with or without a name.
+  repeated HostMatch server_names = 1;
+  // Index into Snapshot.upstreams.
+  uint32 upstream = 2;
 }
 
 // Lookup defines the variable $name: source is expanded per request and
