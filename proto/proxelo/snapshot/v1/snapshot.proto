@@ -29,6 +29,106 @@ message Snapshot {
   // L4 proxies (nginx stream server blocks). Their addresses differ from
   // the listeners' for TCP.
   repeated Stream streams = 11;
+  // Response caches (nginx proxy_cache_path), referenced by index from
+  // Route.cache. Entries on disk and the index carry over snapshots by zone
+  // ID while the path stays the same.
+  repeated CacheZone cache_zones = 12;
+}
+
+// CacheZone is one response cache on disk (nginx proxy_cache_path). Each
+// entry is one file named by the MD5 of its key, in levels subdirectories
+// as nginx lays them out, holding the response head and body. An index in
+// memory is rebuilt from the files at start.
+message CacheZone {
+  // Control plane resource ID.
+  string id = 1;
+  // Absolute directory; created when missing.
+  string path = 2;
+  // Subdirectory name lengths from the end of the hash, each 1 or 2, at
+  // most 3 (levels=1:2). Empty: entries directly under path.
+  repeated uint32 levels = 3;
+  // Bytes on disk at most; the least recently used entries go first. 0:
+  // unlimited.
+  uint64 max_size = 4;
+  // Entries kept at most (keys_zone). 0: 100000.
+  uint32 max_entries = 5;
+  // Entries not used for this long are removed, fresh or not. 0: 600.
+  uint32 inactive_s = 6;
+}
+
+// Cache stores proxied responses of a route and answers from them (nginx
+// proxy_cache and the proxy_cache_* directives).
+message Cache {
+  // When an entry may be answered from instead of an upstream response
+  // (proxy_cache_use_stale).
+  enum UseStale {
+    USE_STALE_UNSPECIFIED = 0;
+    USE_STALE_ERROR = 1;
+    USE_STALE_TIMEOUT = 2;
+    // While another request refreshes the entry.
+    USE_STALE_UPDATING = 3;
+    USE_STALE_HTTP_500 = 4;
+    USE_STALE_HTTP_502 = 5;
+    USE_STALE_HTTP_503 = 6;
+    USE_STALE_HTTP_504 = 7;
+    USE_STALE_HTTP_403 = 8;
+    USE_STALE_HTTP_404 = 9;
+    USE_STALE_HTTP_429 = 10;
+  }
+  // Upstream response headers whose caching instructions are ignored
+  // (proxy_ignore_headers).
+  enum Ignore {
+    IGNORE_UNSPECIFIED = 0;
+    IGNORE_X_ACCEL_EXPIRES = 1;
+    IGNORE_EXPIRES = 2;
+    IGNORE_CACHE_CONTROL = 3;
+    IGNORE_SET_COOKIE = 4;
+    IGNORE_VARY = 5;
+  }
+  // Index into Snapshot.cache_zones.
+  uint32 zone = 1;
+  // Template. Empty: $scheme$proxy_host$request_uri.
+  string key = 2;
+  // How long responses are fresh by status when the upstream does not say
+  // (proxy_cache_valid). Responses with no matching entry and no upstream
+  // freshness are not stored.
+  repeated CacheValid valid = 3;
+  // Uppercase methods that are cached. Empty: GET and HEAD.
+  repeated string methods = 4;
+  // Requests for a key before its response is stored (proxy_cache_min_uses).
+  // 0: 1.
+  uint32 min_uses = 5;
+  // CEL expressions over `request` as Route.expr. True for bypass: answer
+  // from the upstream, still storing the response (proxy_cache_bypass).
+  // True for no_store: do not store the response (proxy_no_cache).
+  string bypass = 6;
+  string no_store = 7;
+  // One request per key goes upstream at a time; the others wait up to
+  // lock_timeout_ms for its response (proxy_cache_lock). 0: 5000.
+  bool lock = 8;
+  uint32 lock_timeout_ms = 9;
+  repeated UseStale use_stale = 10;
+  // An expired entry is answered at once while the refresh runs after the
+  // response (proxy_cache_background_update). Needs USE_STALE_UPDATING.
+  bool background_update = 11;
+  // Expired entries with ETag or Last-Modified are refreshed with a
+  // conditional request (proxy_cache_revalidate).
+  bool revalidate = 12;
+  repeated Ignore ignore = 13;
+  // HEAD requests go upstream as HEAD instead of GET (proxy_cache_convert_head
+  // off).
+  bool keep_head = 14;
+  // Ranges of this size are fetched and stored apart, each its own entry
+  // (nginx slice). The key should include $slice_range. 0: whole responses.
+  uint64 slice = 15;
+}
+
+message CacheValid {
+  // Empty: 200, 301 and 302.
+  repeated uint32 statuses = 1;
+  // Every status (proxy_cache_valid any).
+  bool any = 2;
+  uint32 seconds = 3;
 }
 
 // Stream is one nginx stream server: connections or datagrams on an address
@@ -451,6 +551,8 @@ message Route {
   // Response bandwidth per request (nginx limit_rate). Unset: unlimited.
   Bandwidth bandwidth = 15;
   Compression compression = 16;
+  // Only for proxy actions. Unset: not cached.
+  Cache cache = 17;
 }
 
 // Access holds the nginx preaccess and access phase settings of a route,

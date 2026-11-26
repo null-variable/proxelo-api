@@ -31,6 +31,7 @@ type SyncRequest struct {
 	//	*SyncRequest_Ack
 	//	*SyncRequest_Stats
 	//	*SyncRequest_TapEvents
+	//	*SyncRequest_PurgeDone
 	Kind          isSyncRequest_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -109,6 +110,15 @@ func (x *SyncRequest) GetTapEvents() *TapEvents {
 	return nil
 }
 
+func (x *SyncRequest) GetPurgeDone() *PurgeDone {
+	if x != nil {
+		if x, ok := x.Kind.(*SyncRequest_PurgeDone); ok {
+			return x.PurgeDone
+		}
+	}
+	return nil
+}
+
 type isSyncRequest_Kind interface {
 	isSyncRequest_Kind()
 }
@@ -129,6 +139,10 @@ type SyncRequest_TapEvents struct {
 	TapEvents *TapEvents `protobuf:"bytes,4,opt,name=tap_events,json=tapEvents,proto3,oneof"`
 }
 
+type SyncRequest_PurgeDone struct {
+	PurgeDone *PurgeDone `protobuf:"bytes,5,opt,name=purge_done,json=purgeDone,proto3,oneof"`
+}
+
 func (*SyncRequest_Hello) isSyncRequest_Kind() {}
 
 func (*SyncRequest_Ack) isSyncRequest_Kind() {}
@@ -136,6 +150,8 @@ func (*SyncRequest_Ack) isSyncRequest_Kind() {}
 func (*SyncRequest_Stats) isSyncRequest_Kind() {}
 
 func (*SyncRequest_TapEvents) isSyncRequest_Kind() {}
+
+func (*SyncRequest_PurgeDone) isSyncRequest_Kind() {}
 
 // Sent by the control plane.
 type SyncResponse struct {
@@ -146,6 +162,7 @@ type SyncResponse struct {
 	//	*SyncResponse_SnapshotData
 	//	*SyncResponse_Challenges
 	//	*SyncResponse_Tap
+	//	*SyncResponse_Purge
 	Kind          isSyncResponse_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -225,6 +242,15 @@ func (x *SyncResponse) GetTap() *TapFilter {
 	return nil
 }
 
+func (x *SyncResponse) GetPurge() *Purge {
+	if x != nil {
+		if x, ok := x.Kind.(*SyncResponse_Purge); ok {
+			return x.Purge
+		}
+	}
+	return nil
+}
+
 type isSyncResponse_Kind interface {
 	isSyncResponse_Kind()
 }
@@ -250,6 +276,10 @@ type SyncResponse_Tap struct {
 	Tap *TapFilter `protobuf:"bytes,4,opt,name=tap,proto3,oneof"`
 }
 
+type SyncResponse_Purge struct {
+	Purge *Purge `protobuf:"bytes,5,opt,name=purge,proto3,oneof"`
+}
+
 func (*SyncResponse_Snapshot) isSyncResponse_Kind() {}
 
 func (*SyncResponse_SnapshotData) isSyncResponse_Kind() {}
@@ -257,6 +287,161 @@ func (*SyncResponse_SnapshotData) isSyncResponse_Kind() {}
 func (*SyncResponse_Challenges) isSyncResponse_Kind() {}
 
 func (*SyncResponse_Tap) isSyncResponse_Kind() {}
+
+func (*SyncResponse_Purge) isSyncResponse_Kind() {}
+
+// Purge removes cache entries of one zone. An entry goes when any of keys,
+// prefixes or tags matches it, or always with all. The proxy answers with
+// PurgeDone carrying the same id.
+type Purge struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// CacheZone.id.
+	ZoneId string `protobuf:"bytes,2,opt,name=zone_id,json=zoneId,proto3" json:"zone_id,omitempty"`
+	// Cache keys as expanded.
+	Keys     []string `protobuf:"bytes,3,rep,name=keys,proto3" json:"keys,omitempty"`
+	Prefixes []string `protobuf:"bytes,4,rep,name=prefixes,proto3" json:"prefixes,omitempty"`
+	// Values of the upstream's Cache-Tag header, which lists tags separated
+	// by commas or spaces.
+	Tags          []string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty"`
+	All           bool     `protobuf:"varint,6,opt,name=all,proto3" json:"all,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Purge) Reset() {
+	*x = Purge{}
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Purge) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Purge) ProtoMessage() {}
+
+func (x *Purge) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Purge.ProtoReflect.Descriptor instead.
+func (*Purge) Descriptor() ([]byte, []int) {
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Purge) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Purge) GetZoneId() string {
+	if x != nil {
+		return x.ZoneId
+	}
+	return ""
+}
+
+func (x *Purge) GetKeys() []string {
+	if x != nil {
+		return x.Keys
+	}
+	return nil
+}
+
+func (x *Purge) GetPrefixes() []string {
+	if x != nil {
+		return x.Prefixes
+	}
+	return nil
+}
+
+func (x *Purge) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *Purge) GetAll() bool {
+	if x != nil {
+		return x.All
+	}
+	return false
+}
+
+type PurgeDone struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Entries removed.
+	Removed uint64 `protobuf:"varint,2,opt,name=removed,proto3" json:"removed,omitempty"`
+	// Why nothing was removed, such as an unknown zone. Empty on success.
+	Error         string `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PurgeDone) Reset() {
+	*x = PurgeDone{}
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PurgeDone) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PurgeDone) ProtoMessage() {}
+
+func (x *PurgeDone) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PurgeDone.ProtoReflect.Descriptor instead.
+func (*PurgeDone) Descriptor() ([]byte, []int) {
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PurgeDone) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PurgeDone) GetRemoved() uint64 {
+	if x != nil {
+		return x.Removed
+	}
+	return 0
+}
+
+func (x *PurgeDone) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
 
 // TapFilter selects requests the proxy reports as they finish, for Live
 // Tap. A new filter replaces the previous one; an empty one (no id) stops
@@ -287,7 +472,7 @@ type TapFilter struct {
 
 func (x *TapFilter) Reset() {
 	*x = TapFilter{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[2]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -299,7 +484,7 @@ func (x *TapFilter) String() string {
 func (*TapFilter) ProtoMessage() {}
 
 func (x *TapFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[2]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -312,7 +497,7 @@ func (x *TapFilter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TapFilter.ProtoReflect.Descriptor instead.
 func (*TapFilter) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{2}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TapFilter) GetId() string {
@@ -377,7 +562,7 @@ type TapEvents struct {
 
 func (x *TapEvents) Reset() {
 	*x = TapEvents{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[3]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -389,7 +574,7 @@ func (x *TapEvents) String() string {
 func (*TapEvents) ProtoMessage() {}
 
 func (x *TapEvents) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[3]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -402,7 +587,7 @@ func (x *TapEvents) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TapEvents.ProtoReflect.Descriptor instead.
 func (*TapEvents) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{3}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TapEvents) GetTapId() string {
@@ -455,7 +640,7 @@ type TapEvent struct {
 
 func (x *TapEvent) Reset() {
 	*x = TapEvent{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[4]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -467,7 +652,7 @@ func (x *TapEvent) String() string {
 func (*TapEvent) ProtoMessage() {}
 
 func (x *TapEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[4]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -480,7 +665,7 @@ func (x *TapEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TapEvent.ProtoReflect.Descriptor instead.
 func (*TapEvent) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{4}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *TapEvent) GetTimeUs() int64 {
@@ -591,7 +776,7 @@ type TapHeader struct {
 
 func (x *TapHeader) Reset() {
 	*x = TapHeader{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[5]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -603,7 +788,7 @@ func (x *TapHeader) String() string {
 func (*TapHeader) ProtoMessage() {}
 
 func (x *TapHeader) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[5]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -616,7 +801,7 @@ func (x *TapHeader) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TapHeader.ProtoReflect.Descriptor instead.
 func (*TapHeader) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{5}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *TapHeader) GetName() string {
@@ -645,7 +830,7 @@ type Challenges struct {
 
 func (x *Challenges) Reset() {
 	*x = Challenges{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[6]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -657,7 +842,7 @@ func (x *Challenges) String() string {
 func (*Challenges) ProtoMessage() {}
 
 func (x *Challenges) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[6]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -670,7 +855,7 @@ func (x *Challenges) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Challenges.ProtoReflect.Descriptor instead.
 func (*Challenges) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{6}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Challenges) GetHttp01() []*HttpChallenge {
@@ -699,7 +884,7 @@ type HttpChallenge struct {
 
 func (x *HttpChallenge) Reset() {
 	*x = HttpChallenge{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[7]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -711,7 +896,7 @@ func (x *HttpChallenge) String() string {
 func (*HttpChallenge) ProtoMessage() {}
 
 func (x *HttpChallenge) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[7]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -724,7 +909,7 @@ func (x *HttpChallenge) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpChallenge.ProtoReflect.Descriptor instead.
 func (*HttpChallenge) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{7}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *HttpChallenge) GetToken() string {
@@ -755,7 +940,7 @@ type TlsAlpnChallenge struct {
 
 func (x *TlsAlpnChallenge) Reset() {
 	*x = TlsAlpnChallenge{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[8]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -767,7 +952,7 @@ func (x *TlsAlpnChallenge) String() string {
 func (*TlsAlpnChallenge) ProtoMessage() {}
 
 func (x *TlsAlpnChallenge) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[8]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -780,7 +965,7 @@ func (x *TlsAlpnChallenge) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TlsAlpnChallenge.ProtoReflect.Descriptor instead.
 func (*TlsAlpnChallenge) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{8}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *TlsAlpnChallenge) GetName() string {
@@ -816,7 +1001,7 @@ type Hello struct {
 
 func (x *Hello) Reset() {
 	*x = Hello{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[9]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -828,7 +1013,7 @@ func (x *Hello) String() string {
 func (*Hello) ProtoMessage() {}
 
 func (x *Hello) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[9]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -841,7 +1026,7 @@ func (x *Hello) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Hello.ProtoReflect.Descriptor instead.
 func (*Hello) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{9}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Hello) GetNodeId() string {
@@ -892,7 +1077,7 @@ type Stats struct {
 
 func (x *Stats) Reset() {
 	*x = Stats{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[10]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -904,7 +1089,7 @@ func (x *Stats) String() string {
 func (*Stats) ProtoMessage() {}
 
 func (x *Stats) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[10]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -917,7 +1102,7 @@ func (x *Stats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Stats.ProtoReflect.Descriptor instead.
 func (*Stats) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{10}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *Stats) GetRevision() uint64 {
@@ -987,7 +1172,7 @@ type SiteStats struct {
 
 func (x *SiteStats) Reset() {
 	*x = SiteStats{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[11]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -999,7 +1184,7 @@ func (x *SiteStats) String() string {
 func (*SiteStats) ProtoMessage() {}
 
 func (x *SiteStats) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[11]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1012,7 +1197,7 @@ func (x *SiteStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SiteStats.ProtoReflect.Descriptor instead.
 func (*SiteStats) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{11}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SiteStats) GetId() string {
@@ -1049,7 +1234,7 @@ type RouteStats struct {
 
 func (x *RouteStats) Reset() {
 	*x = RouteStats{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[12]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1061,7 +1246,7 @@ func (x *RouteStats) String() string {
 func (*RouteStats) ProtoMessage() {}
 
 func (x *RouteStats) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[12]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1074,7 +1259,7 @@ func (x *RouteStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RouteStats.ProtoReflect.Descriptor instead.
 func (*RouteStats) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{12}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *RouteStats) GetSiteId() string {
@@ -1124,7 +1309,7 @@ type TargetStats struct {
 
 func (x *TargetStats) Reset() {
 	*x = TargetStats{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[13]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1136,7 +1321,7 @@ func (x *TargetStats) String() string {
 func (*TargetStats) ProtoMessage() {}
 
 func (x *TargetStats) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[13]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1149,7 +1334,7 @@ func (x *TargetStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TargetStats.ProtoReflect.Descriptor instead.
 func (*TargetStats) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{13}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *TargetStats) GetUpstreamId() string {
@@ -1206,7 +1391,7 @@ type Ack struct {
 
 func (x *Ack) Reset() {
 	*x = Ack{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[14]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1218,7 +1403,7 @@ func (x *Ack) String() string {
 func (*Ack) ProtoMessage() {}
 
 func (x *Ack) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[14]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1231,7 +1416,7 @@ func (x *Ack) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ack.ProtoReflect.Descriptor instead.
 func (*Ack) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{14}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *Ack) GetRevision() uint64 {
@@ -1259,22 +1444,36 @@ var File_proxelo_distrib_v1_distrib_proto protoreflect.FileDescriptor
 
 const file_proxelo_distrib_v1_distrib_proto_rawDesc = "" +
 	"\n" +
-	" proxelo/distrib/v1/distrib.proto\x12\x12proxelo.distrib.v1\x1a\"proxelo/snapshot/v1/snapshot.proto\"\xe8\x01\n" +
+	" proxelo/distrib/v1/distrib.proto\x12\x12proxelo.distrib.v1\x1a\"proxelo/snapshot/v1/snapshot.proto\"\xa8\x02\n" +
 	"\vSyncRequest\x121\n" +
 	"\x05hello\x18\x01 \x01(\v2\x19.proxelo.distrib.v1.HelloH\x00R\x05hello\x12+\n" +
 	"\x03ack\x18\x02 \x01(\v2\x17.proxelo.distrib.v1.AckH\x00R\x03ack\x121\n" +
 	"\x05stats\x18\x03 \x01(\v2\x19.proxelo.distrib.v1.StatsH\x00R\x05stats\x12>\n" +
 	"\n" +
-	"tap_events\x18\x04 \x01(\v2\x1d.proxelo.distrib.v1.TapEventsH\x00R\ttapEventsB\x06\n" +
-	"\x04kind\"\xf3\x01\n" +
+	"tap_events\x18\x04 \x01(\v2\x1d.proxelo.distrib.v1.TapEventsH\x00R\ttapEvents\x12>\n" +
+	"\n" +
+	"purge_done\x18\x05 \x01(\v2\x1d.proxelo.distrib.v1.PurgeDoneH\x00R\tpurgeDoneB\x06\n" +
+	"\x04kind\"\xa6\x02\n" +
 	"\fSyncResponse\x12?\n" +
 	"\bsnapshot\x18\x01 \x01(\v2\x1d.proxelo.snapshot.v1.SnapshotB\x02\x18\x01H\x00R\bsnapshot\x12%\n" +
 	"\rsnapshot_data\x18\x03 \x01(\fH\x00R\fsnapshotData\x12@\n" +
 	"\n" +
 	"challenges\x18\x02 \x01(\v2\x1e.proxelo.distrib.v1.ChallengesH\x00R\n" +
 	"challenges\x121\n" +
-	"\x03tap\x18\x04 \x01(\v2\x1d.proxelo.distrib.v1.TapFilterH\x00R\x03tapB\x06\n" +
-	"\x04kind\"\xc1\x01\n" +
+	"\x03tap\x18\x04 \x01(\v2\x1d.proxelo.distrib.v1.TapFilterH\x00R\x03tap\x121\n" +
+	"\x05purge\x18\x05 \x01(\v2\x19.proxelo.distrib.v1.PurgeH\x00R\x05purgeB\x06\n" +
+	"\x04kind\"\x86\x01\n" +
+	"\x05Purge\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\azone_id\x18\x02 \x01(\tR\x06zoneId\x12\x12\n" +
+	"\x04keys\x18\x03 \x03(\tR\x04keys\x12\x1a\n" +
+	"\bprefixes\x18\x04 \x03(\tR\bprefixes\x12\x12\n" +
+	"\x04tags\x18\x05 \x03(\tR\x04tags\x12\x10\n" +
+	"\x03all\x18\x06 \x01(\bR\x03all\"K\n" +
+	"\tPurgeDone\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
+	"\aremoved\x18\x02 \x01(\x04R\aremoved\x12\x14\n" +
+	"\x05error\x18\x03 \x01(\tR\x05error\"\xc1\x01\n" +
 	"\tTapFilter\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bsite_ids\x18\x02 \x03(\tR\asiteIds\x12\x1b\n" +
@@ -1371,47 +1570,51 @@ func file_proxelo_distrib_v1_distrib_proto_rawDescGZIP() []byte {
 	return file_proxelo_distrib_v1_distrib_proto_rawDescData
 }
 
-var file_proxelo_distrib_v1_distrib_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_proxelo_distrib_v1_distrib_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_proxelo_distrib_v1_distrib_proto_goTypes = []any{
 	(*SyncRequest)(nil),      // 0: proxelo.distrib.v1.SyncRequest
 	(*SyncResponse)(nil),     // 1: proxelo.distrib.v1.SyncResponse
-	(*TapFilter)(nil),        // 2: proxelo.distrib.v1.TapFilter
-	(*TapEvents)(nil),        // 3: proxelo.distrib.v1.TapEvents
-	(*TapEvent)(nil),         // 4: proxelo.distrib.v1.TapEvent
-	(*TapHeader)(nil),        // 5: proxelo.distrib.v1.TapHeader
-	(*Challenges)(nil),       // 6: proxelo.distrib.v1.Challenges
-	(*HttpChallenge)(nil),    // 7: proxelo.distrib.v1.HttpChallenge
-	(*TlsAlpnChallenge)(nil), // 8: proxelo.distrib.v1.TlsAlpnChallenge
-	(*Hello)(nil),            // 9: proxelo.distrib.v1.Hello
-	(*Stats)(nil),            // 10: proxelo.distrib.v1.Stats
-	(*SiteStats)(nil),        // 11: proxelo.distrib.v1.SiteStats
-	(*RouteStats)(nil),       // 12: proxelo.distrib.v1.RouteStats
-	(*TargetStats)(nil),      // 13: proxelo.distrib.v1.TargetStats
-	(*Ack)(nil),              // 14: proxelo.distrib.v1.Ack
-	(*v1.Snapshot)(nil),      // 15: proxelo.snapshot.v1.Snapshot
+	(*Purge)(nil),            // 2: proxelo.distrib.v1.Purge
+	(*PurgeDone)(nil),        // 3: proxelo.distrib.v1.PurgeDone
+	(*TapFilter)(nil),        // 4: proxelo.distrib.v1.TapFilter
+	(*TapEvents)(nil),        // 5: proxelo.distrib.v1.TapEvents
+	(*TapEvent)(nil),         // 6: proxelo.distrib.v1.TapEvent
+	(*TapHeader)(nil),        // 7: proxelo.distrib.v1.TapHeader
+	(*Challenges)(nil),       // 8: proxelo.distrib.v1.Challenges
+	(*HttpChallenge)(nil),    // 9: proxelo.distrib.v1.HttpChallenge
+	(*TlsAlpnChallenge)(nil), // 10: proxelo.distrib.v1.TlsAlpnChallenge
+	(*Hello)(nil),            // 11: proxelo.distrib.v1.Hello
+	(*Stats)(nil),            // 12: proxelo.distrib.v1.Stats
+	(*SiteStats)(nil),        // 13: proxelo.distrib.v1.SiteStats
+	(*RouteStats)(nil),       // 14: proxelo.distrib.v1.RouteStats
+	(*TargetStats)(nil),      // 15: proxelo.distrib.v1.TargetStats
+	(*Ack)(nil),              // 16: proxelo.distrib.v1.Ack
+	(*v1.Snapshot)(nil),      // 17: proxelo.snapshot.v1.Snapshot
 }
 var file_proxelo_distrib_v1_distrib_proto_depIdxs = []int32{
-	9,  // 0: proxelo.distrib.v1.SyncRequest.hello:type_name -> proxelo.distrib.v1.Hello
-	14, // 1: proxelo.distrib.v1.SyncRequest.ack:type_name -> proxelo.distrib.v1.Ack
-	10, // 2: proxelo.distrib.v1.SyncRequest.stats:type_name -> proxelo.distrib.v1.Stats
-	3,  // 3: proxelo.distrib.v1.SyncRequest.tap_events:type_name -> proxelo.distrib.v1.TapEvents
-	15, // 4: proxelo.distrib.v1.SyncResponse.snapshot:type_name -> proxelo.snapshot.v1.Snapshot
-	6,  // 5: proxelo.distrib.v1.SyncResponse.challenges:type_name -> proxelo.distrib.v1.Challenges
-	2,  // 6: proxelo.distrib.v1.SyncResponse.tap:type_name -> proxelo.distrib.v1.TapFilter
-	4,  // 7: proxelo.distrib.v1.TapEvents.events:type_name -> proxelo.distrib.v1.TapEvent
-	5,  // 8: proxelo.distrib.v1.TapEvent.headers:type_name -> proxelo.distrib.v1.TapHeader
-	7,  // 9: proxelo.distrib.v1.Challenges.http01:type_name -> proxelo.distrib.v1.HttpChallenge
-	8,  // 10: proxelo.distrib.v1.Challenges.tls_alpn01:type_name -> proxelo.distrib.v1.TlsAlpnChallenge
-	11, // 11: proxelo.distrib.v1.Stats.sites:type_name -> proxelo.distrib.v1.SiteStats
-	12, // 12: proxelo.distrib.v1.Stats.routes:type_name -> proxelo.distrib.v1.RouteStats
-	13, // 13: proxelo.distrib.v1.Stats.targets:type_name -> proxelo.distrib.v1.TargetStats
-	0,  // 14: proxelo.distrib.v1.DistributionService.Sync:input_type -> proxelo.distrib.v1.SyncRequest
-	1,  // 15: proxelo.distrib.v1.DistributionService.Sync:output_type -> proxelo.distrib.v1.SyncResponse
-	15, // [15:16] is the sub-list for method output_type
-	14, // [14:15] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	11, // 0: proxelo.distrib.v1.SyncRequest.hello:type_name -> proxelo.distrib.v1.Hello
+	16, // 1: proxelo.distrib.v1.SyncRequest.ack:type_name -> proxelo.distrib.v1.Ack
+	12, // 2: proxelo.distrib.v1.SyncRequest.stats:type_name -> proxelo.distrib.v1.Stats
+	5,  // 3: proxelo.distrib.v1.SyncRequest.tap_events:type_name -> proxelo.distrib.v1.TapEvents
+	3,  // 4: proxelo.distrib.v1.SyncRequest.purge_done:type_name -> proxelo.distrib.v1.PurgeDone
+	17, // 5: proxelo.distrib.v1.SyncResponse.snapshot:type_name -> proxelo.snapshot.v1.Snapshot
+	8,  // 6: proxelo.distrib.v1.SyncResponse.challenges:type_name -> proxelo.distrib.v1.Challenges
+	4,  // 7: proxelo.distrib.v1.SyncResponse.tap:type_name -> proxelo.distrib.v1.TapFilter
+	2,  // 8: proxelo.distrib.v1.SyncResponse.purge:type_name -> proxelo.distrib.v1.Purge
+	6,  // 9: proxelo.distrib.v1.TapEvents.events:type_name -> proxelo.distrib.v1.TapEvent
+	7,  // 10: proxelo.distrib.v1.TapEvent.headers:type_name -> proxelo.distrib.v1.TapHeader
+	9,  // 11: proxelo.distrib.v1.Challenges.http01:type_name -> proxelo.distrib.v1.HttpChallenge
+	10, // 12: proxelo.distrib.v1.Challenges.tls_alpn01:type_name -> proxelo.distrib.v1.TlsAlpnChallenge
+	13, // 13: proxelo.distrib.v1.Stats.sites:type_name -> proxelo.distrib.v1.SiteStats
+	14, // 14: proxelo.distrib.v1.Stats.routes:type_name -> proxelo.distrib.v1.RouteStats
+	15, // 15: proxelo.distrib.v1.Stats.targets:type_name -> proxelo.distrib.v1.TargetStats
+	0,  // 16: proxelo.distrib.v1.DistributionService.Sync:input_type -> proxelo.distrib.v1.SyncRequest
+	1,  // 17: proxelo.distrib.v1.DistributionService.Sync:output_type -> proxelo.distrib.v1.SyncResponse
+	17, // [17:18] is the sub-list for method output_type
+	16, // [16:17] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_proxelo_distrib_v1_distrib_proto_init() }
@@ -1424,12 +1627,14 @@ func file_proxelo_distrib_v1_distrib_proto_init() {
 		(*SyncRequest_Ack)(nil),
 		(*SyncRequest_Stats)(nil),
 		(*SyncRequest_TapEvents)(nil),
+		(*SyncRequest_PurgeDone)(nil),
 	}
 	file_proxelo_distrib_v1_distrib_proto_msgTypes[1].OneofWrappers = []any{
 		(*SyncResponse_Snapshot)(nil),
 		(*SyncResponse_SnapshotData)(nil),
 		(*SyncResponse_Challenges)(nil),
 		(*SyncResponse_Tap)(nil),
+		(*SyncResponse_Purge)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1437,7 +1642,7 @@ func file_proxelo_distrib_v1_distrib_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proxelo_distrib_v1_distrib_proto_rawDesc), len(file_proxelo_distrib_v1_distrib_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

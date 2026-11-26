@@ -19,6 +19,7 @@ message SyncRequest {
     Ack ack = 2;
     Stats stats = 3;
     TapEvents tap_events = 4;
+    PurgeDone purge_done = 5;
   }
 }
 
@@ -32,7 +33,32 @@ message SyncResponse {
     bytes snapshot_data = 3;
     Challenges challenges = 2;
     TapFilter tap = 4;
+    Purge purge = 5;
   }
+}
+
+// Purge removes cache entries of one zone. An entry goes when any of keys,
+// prefixes or tags matches it, or always with all. The proxy answers with
+// PurgeDone carrying the same id.
+message Purge {
+  string id = 1;
+  // CacheZone.id.
+  string zone_id = 2;
+  // Cache keys as expanded.
+  repeated string keys = 3;
+  repeated string prefixes = 4;
+  // Values of the upstream's Cache-Tag header, which lists tags separated
+  // by commas or spaces.
+  repeated string tags = 5;
+  bool all = 6;
+}
+
+message PurgeDone {
+  string id = 1;
+  // Entries removed.
+  uint64 removed = 2;
+  // Why nothing was removed, such as an unknown zone. Empty on success.
+  string error = 3;
 }
 
 // TapFilter selects requests the proxy reports as they finish, for Live
