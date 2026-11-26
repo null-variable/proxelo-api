@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/null-variable/proxelo/main/docs/images/banner-dark.jpg">
+  <img alt="Proxelo" src="https://raw.githubusercontent.com/null-variable/proxelo/main/docs/images/banner-light.jpg">
+</picture>
+
 # proxelo-api
 
 Protocol Buffers definitions shared by the Proxelo control plane
