@@ -15,6 +15,49 @@ message Snapshot {
   repeated Upstream upstreams = 5;
   repeated Certificate certificates = 6;
   repeated AccessLog access_logs = 7;
+  // Request rate limits (nginx limit_req_zone with limit_req), referenced by
+  // index from Access.rate_limits. State is kept per zone ID across
+  // snapshots.
+  repeated RateZone rate_zones = 8;
+  // Concurrent request limits (nginx limit_conn_zone with limit_conn),
+  // referenced by index from Access.conn_limits.
+  repeated ConnZone conn_zones = 9;
+}
+
+// RateZone is a leaky bucket per key, as nginx limit_req.
+message RateZone {
+  // Control plane resource ID; state carries over snapshots by it.
+  string id = 1;
+  // Template for the key. Requests whose key expands empty are not limited.
+  string key = 2;
+  // Requests per second times 1000 (nginx keeps the rate in this unit, so
+  // 30r/m is 500).
+  uint64 rate_milli = 3;
+  // Requests over the rate that may wait or pass (nginx burst).
+  uint32 burst = 4;
+  // Excess requests passed without waiting (nginx delay; nodelay is the
+  // burst).
+  uint32 delay = 5;
+  // Status for rejected requests. 0: 503.
+  uint32 status = 6;
+  // Count and log, but never delay or reject (limit_req_dry_run).
+  bool dry_run = 7;
+  // Keys kept at most; when full, idle keys are dropped and a new key is
+  // rejected if none is idle (nginx zone size). 0: 16384.
+  uint32 max_keys = 8;
+}
+
+// ConnZone counts requests in progress per key, as nginx limit_conn.
+message ConnZone {
+  string id = 1;
+  string key = 2;
+  // Requests in progress allowed per key.
+  uint32 max = 3;
+  // 0: 503.
+  uint32 status = 4;
+  bool dry_run = 5;
+  // Keys kept at most; a new key is rejected when full. 0: 16384.
+  uint32 max_keys = 6;
 }
 
 // Certificate is a certificate chain and its private key, referenced by
@@ -126,6 +169,7 @@ message Site {
   // Index into Snapshot.access_logs for requests that end before a route is
   // chosen. Unset: not logged.
   optional uint32 access_log = 12;
+  RealIp real_ip = 13;
 }
 
 // Template strings (Rewrite.replacement, ReturnAction.text, TryFiles,
@@ -228,6 +272,86 @@ message Route {
   HeaderOps request_headers = 12;
   // Index into Snapshot.access_logs. Unset: not logged.
   optional uint32 access_log = 13;
+  // Checks run once the route is chosen, before its content. Unset: none.
+  Access access = 14;
+  // Response bandwidth per request (nginx limit_rate). Unset: unlimited.
+  Bandwidth bandwidth = 15;
+}
+
+// Access holds the nginx preaccess and access phase settings of a route,
+// run in nginx order: rate_limits, conn_limits, rules, basic_auth,
+// forward_auth. The limits apply once per request, from the first route
+// reached that has any; the others run for every route an internal redirect
+// reaches, and their 401, 403, 429 or 503 goes through the error pages.
+message Access {
+  // Indexes into Snapshot.rate_zones; every one applies.
+  repeated uint32 rate_limits = 1;
+  // Indexes into Snapshot.conn_zones.
+  repeated uint32 conn_limits = 2;
+  // nginx allow and deny, by client address: the first rule that matches
+  // decides; no match allows. A denied request gets 403.
+  repeated AccessRule rules = 3;
+  BasicAuth basic_auth = 4;
+  ForwardAuth forward_auth = 5;
+}
+
+// RealIp replaces the client address with one a trusted proxy sent (nginx
+// realip), before the route is chosen.
+message RealIp {
+  // Trusted proxies, as CIDRs or addresses (set_real_ip_from).
+  repeated string from = 1;
+  // Lowercase header to read, "x-forwarded-for" or another
+  // (real_ip_header).
+  string header = 2;
+  // Skip trusted addresses from the right of X-Forwarded-For instead of
+  // taking the last one (real_ip_recursive).
+  bool recursive = 3;
+}
+
+message AccessRule {
+  bool allow = 1;
+  // CIDR or address. Empty: every client ("all").
+  string cidr = 2;
+}
+
+// BasicAuth is nginx auth_basic with an inline user file.
+message BasicAuth {
+  string realm = 1;
+  repeated BasicUser users = 2;
+}
+
+message BasicUser {
+  string name = 1;
+  // Password hash in a format nginx accepts in auth_basic_user_file:
+  // bcrypt ($2a$, $2b$, $2y$), MD5 crypt ($1$, $apr1$), SHA-crypt ($5$,
+  // $6$), {SHA}, {SSHA} or {PLAIN}.
+  string hash = 2;
+}
+
+// ForwardAuth asks an upstream whether to serve the request, as nginx
+// auth_request. The upstream gets a GET without body carrying the request
+// headers and X-Forwarded-Method, -Proto, -Host and -Uri. 2xx allows, 401
+// and 403 are answered (401 with the upstream's WWW-Authenticate), anything
+// else or a failure answers 500.
+message ForwardAuth {
+  // Index into Snapshot.upstreams.
+  uint32 upstream = 1;
+  // Template for the request target.
+  string uri = 2;
+  // Connect, send and read timeout. 0: 60 s.
+  uint32 timeout_ms = 3;
+  // Lowercase response headers copied onto the request sent upstream on
+  // success; they are also variables $auth_resp_<name>.
+  repeated string copy_headers = 4;
+}
+
+// Bandwidth throttles the response body of one request (nginx limit_rate and
+// limit_rate_after).
+message Bandwidth {
+  // Bytes per second.
+  uint64 rate = 1;
+  // Bytes sent at full speed first.
+  uint64 after = 2;
 }
 
 // ValueMatch is one condition on a header (case-insensitive name) or a query

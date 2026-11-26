@@ -72,7 +72,7 @@ Rust (`Cargo.toml`):
 
 ```toml
 [dependencies]
-proxelo-api = { git = "https://github.com/null-variable/proxelo-api", tag = "v0.8.0" }
+proxelo-api = { git = "https://github.com/null-variable/proxelo-api", tag = "v0.9.0" }
 ```
 
 ```rust
