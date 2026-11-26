@@ -77,6 +77,35 @@ message Stats {
   uint64 upstream_attempts = 4;
   // Of upstream_attempts, those that failed to connect or to get a response.
   uint64 upstream_failures = 5;
+  // The same counters per resource, cumulative since start and keyed by
+  // resource ID, for traffic shown on the configuration topology. Resources
+  // of earlier snapshots stay listed.
+  repeated SiteStats sites = 6;
+  repeated RouteStats routes = 7;
+  repeated TargetStats targets = 8;
+}
+
+message SiteStats {
+  string id = 1;
+  uint64 requests = 2;
+  uint64 server_errors = 3;
+}
+
+// RouteStats counts the requests a route answered within one site.
+message RouteStats {
+  string site_id = 1;
+  string id = 2;
+  uint64 requests = 3;
+  uint64 server_errors = 4;
+}
+
+// TargetStats counts attempts to one upstream target.
+message TargetStats {
+  string upstream_id = 1;
+  // host:port as configured.
+  string address = 2;
+  uint64 attempts = 3;
+  uint64 failures = 4;
 }
 
 message Ack {

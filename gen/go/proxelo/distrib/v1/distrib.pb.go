@@ -473,8 +473,14 @@ type Stats struct {
 	UpstreamAttempts uint64 `protobuf:"varint,4,opt,name=upstream_attempts,json=upstreamAttempts,proto3" json:"upstream_attempts,omitempty"`
 	// Of upstream_attempts, those that failed to connect or to get a response.
 	UpstreamFailures uint64 `protobuf:"varint,5,opt,name=upstream_failures,json=upstreamFailures,proto3" json:"upstream_failures,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// The same counters per resource, cumulative since start and keyed by
+	// resource ID, for traffic shown on the configuration topology. Resources
+	// of earlier snapshots stay listed.
+	Sites         []*SiteStats   `protobuf:"bytes,6,rep,name=sites,proto3" json:"sites,omitempty"`
+	Routes        []*RouteStats  `protobuf:"bytes,7,rep,name=routes,proto3" json:"routes,omitempty"`
+	Targets       []*TargetStats `protobuf:"bytes,8,rep,name=targets,proto3" json:"targets,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Stats) Reset() {
@@ -542,6 +548,226 @@ func (x *Stats) GetUpstreamFailures() uint64 {
 	return 0
 }
 
+func (x *Stats) GetSites() []*SiteStats {
+	if x != nil {
+		return x.Sites
+	}
+	return nil
+}
+
+func (x *Stats) GetRoutes() []*RouteStats {
+	if x != nil {
+		return x.Routes
+	}
+	return nil
+}
+
+func (x *Stats) GetTargets() []*TargetStats {
+	if x != nil {
+		return x.Targets
+	}
+	return nil
+}
+
+type SiteStats struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Requests      uint64                 `protobuf:"varint,2,opt,name=requests,proto3" json:"requests,omitempty"`
+	ServerErrors  uint64                 `protobuf:"varint,3,opt,name=server_errors,json=serverErrors,proto3" json:"server_errors,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SiteStats) Reset() {
+	*x = SiteStats{}
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SiteStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SiteStats) ProtoMessage() {}
+
+func (x *SiteStats) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SiteStats.ProtoReflect.Descriptor instead.
+func (*SiteStats) Descriptor() ([]byte, []int) {
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SiteStats) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SiteStats) GetRequests() uint64 {
+	if x != nil {
+		return x.Requests
+	}
+	return 0
+}
+
+func (x *SiteStats) GetServerErrors() uint64 {
+	if x != nil {
+		return x.ServerErrors
+	}
+	return 0
+}
+
+// RouteStats counts the requests a route answered within one site.
+type RouteStats struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SiteId        string                 `protobuf:"bytes,1,opt,name=site_id,json=siteId,proto3" json:"site_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Requests      uint64                 `protobuf:"varint,3,opt,name=requests,proto3" json:"requests,omitempty"`
+	ServerErrors  uint64                 `protobuf:"varint,4,opt,name=server_errors,json=serverErrors,proto3" json:"server_errors,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RouteStats) Reset() {
+	*x = RouteStats{}
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RouteStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RouteStats) ProtoMessage() {}
+
+func (x *RouteStats) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RouteStats.ProtoReflect.Descriptor instead.
+func (*RouteStats) Descriptor() ([]byte, []int) {
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *RouteStats) GetSiteId() string {
+	if x != nil {
+		return x.SiteId
+	}
+	return ""
+}
+
+func (x *RouteStats) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RouteStats) GetRequests() uint64 {
+	if x != nil {
+		return x.Requests
+	}
+	return 0
+}
+
+func (x *RouteStats) GetServerErrors() uint64 {
+	if x != nil {
+		return x.ServerErrors
+	}
+	return 0
+}
+
+// TargetStats counts attempts to one upstream target.
+type TargetStats struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	UpstreamId string                 `protobuf:"bytes,1,opt,name=upstream_id,json=upstreamId,proto3" json:"upstream_id,omitempty"`
+	// host:port as configured.
+	Address       string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+	Attempts      uint64 `protobuf:"varint,3,opt,name=attempts,proto3" json:"attempts,omitempty"`
+	Failures      uint64 `protobuf:"varint,4,opt,name=failures,proto3" json:"failures,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TargetStats) Reset() {
+	*x = TargetStats{}
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TargetStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TargetStats) ProtoMessage() {}
+
+func (x *TargetStats) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TargetStats.ProtoReflect.Descriptor instead.
+func (*TargetStats) Descriptor() ([]byte, []int) {
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *TargetStats) GetUpstreamId() string {
+	if x != nil {
+		return x.UpstreamId
+	}
+	return ""
+}
+
+func (x *TargetStats) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *TargetStats) GetAttempts() uint64 {
+	if x != nil {
+		return x.Attempts
+	}
+	return 0
+}
+
+func (x *TargetStats) GetFailures() uint64 {
+	if x != nil {
+		return x.Failures
+	}
+	return 0
+}
+
 type Ack struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Revision uint64                 `protobuf:"varint,1,opt,name=revision,proto3" json:"revision,omitempty"`
@@ -554,7 +780,7 @@ type Ack struct {
 
 func (x *Ack) Reset() {
 	*x = Ack{}
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[7]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -566,7 +792,7 @@ func (x *Ack) String() string {
 func (*Ack) ProtoMessage() {}
 
 func (x *Ack) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[7]
+	mi := &file_proxelo_distrib_v1_distrib_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -579,7 +805,7 @@ func (x *Ack) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ack.ProtoReflect.Descriptor instead.
 func (*Ack) Descriptor() ([]byte, []int) {
-	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{7}
+	return file_proxelo_distrib_v1_distrib_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Ack) GetRevision() uint64 {
@@ -635,13 +861,32 @@ const file_proxelo_distrib_v1_distrib_proto_rawDesc = "" +
 	"\x05Hello\x12\x17\n" +
 	"\anode_id\x18\x01 \x01(\tR\x06nodeId\x12#\n" +
 	"\rproxy_version\x18\x02 \x01(\tR\fproxyVersion\x12'\n" +
-	"\x0factive_revision\x18\x03 \x01(\x04R\x0eactiveRevision\"\xbe\x01\n" +
+	"\x0factive_revision\x18\x03 \x01(\x04R\x0eactiveRevision\"\xe6\x02\n" +
 	"\x05Stats\x12\x1a\n" +
 	"\brevision\x18\x01 \x01(\x04R\brevision\x12\x1a\n" +
 	"\brequests\x18\x02 \x01(\x04R\brequests\x12#\n" +
 	"\rserver_errors\x18\x03 \x01(\x04R\fserverErrors\x12+\n" +
 	"\x11upstream_attempts\x18\x04 \x01(\x04R\x10upstreamAttempts\x12+\n" +
-	"\x11upstream_failures\x18\x05 \x01(\x04R\x10upstreamFailures\"Q\n" +
+	"\x11upstream_failures\x18\x05 \x01(\x04R\x10upstreamFailures\x123\n" +
+	"\x05sites\x18\x06 \x03(\v2\x1d.proxelo.distrib.v1.SiteStatsR\x05sites\x126\n" +
+	"\x06routes\x18\a \x03(\v2\x1e.proxelo.distrib.v1.RouteStatsR\x06routes\x129\n" +
+	"\atargets\x18\b \x03(\v2\x1f.proxelo.distrib.v1.TargetStatsR\atargets\"\\\n" +
+	"\tSiteStats\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\brequests\x18\x02 \x01(\x04R\brequests\x12#\n" +
+	"\rserver_errors\x18\x03 \x01(\x04R\fserverErrors\"v\n" +
+	"\n" +
+	"RouteStats\x12\x17\n" +
+	"\asite_id\x18\x01 \x01(\tR\x06siteId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x12\x1a\n" +
+	"\brequests\x18\x03 \x01(\x04R\brequests\x12#\n" +
+	"\rserver_errors\x18\x04 \x01(\x04R\fserverErrors\"\x80\x01\n" +
+	"\vTargetStats\x12\x1f\n" +
+	"\vupstream_id\x18\x01 \x01(\tR\n" +
+	"upstreamId\x12\x18\n" +
+	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x1a\n" +
+	"\battempts\x18\x03 \x01(\x04R\battempts\x12\x1a\n" +
+	"\bfailures\x18\x04 \x01(\x04R\bfailures\"Q\n" +
 	"\x03Ack\x12\x1a\n" +
 	"\brevision\x18\x01 \x01(\x04R\brevision\x12\x18\n" +
 	"\aapplied\x18\x02 \x01(\bR\aapplied\x12\x14\n" +
@@ -661,7 +906,7 @@ func file_proxelo_distrib_v1_distrib_proto_rawDescGZIP() []byte {
 	return file_proxelo_distrib_v1_distrib_proto_rawDescData
 }
 
-var file_proxelo_distrib_v1_distrib_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_proxelo_distrib_v1_distrib_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_proxelo_distrib_v1_distrib_proto_goTypes = []any{
 	(*SyncRequest)(nil),      // 0: proxelo.distrib.v1.SyncRequest
 	(*SyncResponse)(nil),     // 1: proxelo.distrib.v1.SyncResponse
@@ -670,24 +915,30 @@ var file_proxelo_distrib_v1_distrib_proto_goTypes = []any{
 	(*TlsAlpnChallenge)(nil), // 4: proxelo.distrib.v1.TlsAlpnChallenge
 	(*Hello)(nil),            // 5: proxelo.distrib.v1.Hello
 	(*Stats)(nil),            // 6: proxelo.distrib.v1.Stats
-	(*Ack)(nil),              // 7: proxelo.distrib.v1.Ack
-	(*v1.Snapshot)(nil),      // 8: proxelo.snapshot.v1.Snapshot
+	(*SiteStats)(nil),        // 7: proxelo.distrib.v1.SiteStats
+	(*RouteStats)(nil),       // 8: proxelo.distrib.v1.RouteStats
+	(*TargetStats)(nil),      // 9: proxelo.distrib.v1.TargetStats
+	(*Ack)(nil),              // 10: proxelo.distrib.v1.Ack
+	(*v1.Snapshot)(nil),      // 11: proxelo.snapshot.v1.Snapshot
 }
 var file_proxelo_distrib_v1_distrib_proto_depIdxs = []int32{
-	5, // 0: proxelo.distrib.v1.SyncRequest.hello:type_name -> proxelo.distrib.v1.Hello
-	7, // 1: proxelo.distrib.v1.SyncRequest.ack:type_name -> proxelo.distrib.v1.Ack
-	6, // 2: proxelo.distrib.v1.SyncRequest.stats:type_name -> proxelo.distrib.v1.Stats
-	8, // 3: proxelo.distrib.v1.SyncResponse.snapshot:type_name -> proxelo.snapshot.v1.Snapshot
-	2, // 4: proxelo.distrib.v1.SyncResponse.challenges:type_name -> proxelo.distrib.v1.Challenges
-	3, // 5: proxelo.distrib.v1.Challenges.http01:type_name -> proxelo.distrib.v1.HttpChallenge
-	4, // 6: proxelo.distrib.v1.Challenges.tls_alpn01:type_name -> proxelo.distrib.v1.TlsAlpnChallenge
-	0, // 7: proxelo.distrib.v1.DistributionService.Sync:input_type -> proxelo.distrib.v1.SyncRequest
-	1, // 8: proxelo.distrib.v1.DistributionService.Sync:output_type -> proxelo.distrib.v1.SyncResponse
-	8, // [8:9] is the sub-list for method output_type
-	7, // [7:8] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	5,  // 0: proxelo.distrib.v1.SyncRequest.hello:type_name -> proxelo.distrib.v1.Hello
+	10, // 1: proxelo.distrib.v1.SyncRequest.ack:type_name -> proxelo.distrib.v1.Ack
+	6,  // 2: proxelo.distrib.v1.SyncRequest.stats:type_name -> proxelo.distrib.v1.Stats
+	11, // 3: proxelo.distrib.v1.SyncResponse.snapshot:type_name -> proxelo.snapshot.v1.Snapshot
+	2,  // 4: proxelo.distrib.v1.SyncResponse.challenges:type_name -> proxelo.distrib.v1.Challenges
+	3,  // 5: proxelo.distrib.v1.Challenges.http01:type_name -> proxelo.distrib.v1.HttpChallenge
+	4,  // 6: proxelo.distrib.v1.Challenges.tls_alpn01:type_name -> proxelo.distrib.v1.TlsAlpnChallenge
+	7,  // 7: proxelo.distrib.v1.Stats.sites:type_name -> proxelo.distrib.v1.SiteStats
+	8,  // 8: proxelo.distrib.v1.Stats.routes:type_name -> proxelo.distrib.v1.RouteStats
+	9,  // 9: proxelo.distrib.v1.Stats.targets:type_name -> proxelo.distrib.v1.TargetStats
+	0,  // 10: proxelo.distrib.v1.DistributionService.Sync:input_type -> proxelo.distrib.v1.SyncRequest
+	1,  // 11: proxelo.distrib.v1.DistributionService.Sync:output_type -> proxelo.distrib.v1.SyncResponse
+	11, // [11:12] is the sub-list for method output_type
+	10, // [10:11] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_proxelo_distrib_v1_distrib_proto_init() }
@@ -711,7 +962,7 @@ func file_proxelo_distrib_v1_distrib_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proxelo_distrib_v1_distrib_proto_rawDesc), len(file_proxelo_distrib_v1_distrib_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
