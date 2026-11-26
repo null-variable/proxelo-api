@@ -67,7 +67,7 @@ Rust (`Cargo.toml`):
 
 ```toml
 [dependencies]
-proxelo-api = { git = "https://github.com/null-variable/proxelo-api", tag = "v0.0.1" }
+proxelo-api = { git = "https://github.com/null-variable/proxelo-api", tag = "v0.6.0" }
 ```
 
 ```rust
@@ -86,7 +86,7 @@ cd rust && cargo build
 
 ## Compatibility
 
-- Releases follow semantic versioning. Tags are shared by the Go module and the Rust crate.
+- Releases follow semantic versioning. A `vX.Y.Z` tag releases both the Go module and the Rust crate; `rust/Cargo.toml` carries the same version, and the release workflow checks it, runs `buf breaking` against the previous tag and publishes a GitHub release.
 - Adding fields or messages is a minor release. Removing or renumbering fields is not allowed within a package; incompatible changes go into a new package version (`v2`).
 - CI runs `buf breaking` against the default branch on every pull request.
 

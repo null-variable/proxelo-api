@@ -1,0 +1,48 @@
+name: release
+
+# A vX.Y.Z tag is the release: Go resolves the module from it and Cargo
+# depends on it with `git = ..., tag = "vX.Y.Z"`. This checks that the tag is
+# consistent and usable from both, then publishes a GitHub release.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Crate version matches the tag
+        run: |
+          want="${GITHUB_REF_NAME#v}"
+          got=$(sed -n 's/^version = "\(.*\)"/\1/p' rust/Cargo.toml | head -1)
+          test "$got" = "$want" || { echo "rust/Cargo.toml has $got, tag is $GITHUB_REF_NAME"; exit 1; }
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - run: buf lint && buf format --diff --exit-code
+      - name: No breaking change since the previous release
+        run: |
+          prev=$(git tag --list 'v*.*.*' --sort=-v:refname | grep -vx "$GITHUB_REF_NAME" | head -1)
+          if [ -n "$prev" ]; then buf breaking --against ".git#tag=$prev"; fi
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Generated code is up to date
+        run: |
+          buf generate
+          git diff --exit-code -- gen/go
+      - run: go build ./...
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Rust crate builds from the tag
+        working-directory: rust
+        run: cargo build
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes

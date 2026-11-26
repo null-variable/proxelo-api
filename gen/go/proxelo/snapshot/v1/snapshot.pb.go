@@ -2061,8 +2061,11 @@ type Upstream struct {
 	KeepaliveTimeoutMs uint32 `protobuf:"varint,7,opt,name=keepalive_timeout_ms,json=keepaliveTimeoutMs,proto3" json:"keepalive_timeout_ms,omitempty"`
 	// Requests per upstream connection before it is closed. Zero: 1000.
 	KeepaliveRequests uint32 `protobuf:"varint,8,opt,name=keepalive_requests,json=keepaliveRequests,proto3" json:"keepalive_requests,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// Host header sent upstream unless a header operation sets one: nginx
+	// $proxy_host, the upstream's name. Empty: the target's host:port.
+	Host          string `protobuf:"bytes,9,opt,name=host,proto3" json:"host,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Upstream) Reset() {
@@ -2149,6 +2152,13 @@ func (x *Upstream) GetKeepaliveRequests() uint32 {
 		return x.KeepaliveRequests
 	}
 	return 0
+}
+
+func (x *Upstream) GetHost() string {
+	if x != nil {
+		return x.Host
+	}
+	return ""
 }
 
 type Target struct {
@@ -2381,7 +2391,7 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\x0fsend_timeout_ms\x18\x03 \x01(\rR\rsendTimeoutMs\x12&\n" +
 	"\x0fread_timeout_ms\x18\x04 \x01(\rR\rreadTimeoutMs\x12F\n" +
 	"\rnext_upstream\x18\x05 \x03(\x0e2!.proxelo.snapshot.v1.NextUpstreamR\fnextUpstream\x12.\n" +
-	"\x13next_upstream_tries\x18\x06 \x01(\rR\x11nextUpstreamTries\"\xc2\x03\n" +
+	"\x13next_upstream_tries\x18\x06 \x01(\rR\x11nextUpstreamTries\"\xd6\x03\n" +
 	"\bUpstream\x125\n" +
 	"\atargets\x18\x01 \x03(\v2\x1b.proxelo.snapshot.v1.TargetR\atargets\x12E\n" +
 	"\tbalancing\x18\x02 \x01(\x0e2'.proxelo.snapshot.v1.Upstream.BalancingR\tbalancing\x12%\n" +
@@ -2390,7 +2400,8 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\tmax_fails\x18\x05 \x01(\rR\bmaxFails\x12&\n" +
 	"\x0ffail_timeout_ms\x18\x06 \x01(\rR\rfailTimeoutMs\x120\n" +
 	"\x14keepalive_timeout_ms\x18\a \x01(\rR\x12keepaliveTimeoutMs\x12-\n" +
-	"\x12keepalive_requests\x18\b \x01(\rR\x11keepaliveRequests\"[\n" +
+	"\x12keepalive_requests\x18\b \x01(\rR\x11keepaliveRequests\x12\x12\n" +
+	"\x04host\x18\t \x01(\tR\x04host\"[\n" +
 	"\tBalancing\x12\x19\n" +
 	"\x15BALANCING_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15BALANCING_ROUND_ROBIN\x10\x01\x12\x18\n" +

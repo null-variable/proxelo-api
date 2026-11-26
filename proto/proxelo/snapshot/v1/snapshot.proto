@@ -369,6 +369,9 @@ message Upstream {
   uint32 keepalive_timeout_ms = 7;
   // Requests per upstream connection before it is closed. Zero: 1000.
   uint32 keepalive_requests = 8;
+  // Host header sent upstream unless a header operation sets one: nginx
+  // $proxy_host, the upstream's name. Empty: the target's host:port.
+  string host = 9;
 }
 
 message Target {
