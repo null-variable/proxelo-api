@@ -17,6 +17,7 @@ message SyncRequest {
   oneof kind {
     Hello hello = 1;
     Ack ack = 2;
+    Stats stats = 3;
   }
 }
 
@@ -60,6 +61,22 @@ message Hello {
   string proxy_version = 2;
   // Revision of the last-known-good snapshot the proxy is serving, 0 if none.
   uint64 active_revision = 3;
+}
+
+// Stats are counters cumulative since the proxy started, sent every few
+// seconds. The control plane's commit-confirm guard watches their rates
+// while a revision awaits confirmation.
+message Stats {
+  // Revision served when the counters were read.
+  uint64 revision = 1;
+  // Finished client requests.
+  uint64 requests = 2;
+  // Of requests, those answered with a 5xx status.
+  uint64 server_errors = 3;
+  // Connection and exchange attempts to upstream targets.
+  uint64 upstream_attempts = 4;
+  // Of upstream_attempts, those that failed to connect or to get a response.
+  uint64 upstream_failures = 5;
 }
 
 message Ack {
