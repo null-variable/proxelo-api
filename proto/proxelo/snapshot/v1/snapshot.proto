@@ -22,6 +22,77 @@ message Snapshot {
   // Concurrent request limits (nginx limit_conn_zone with limit_conn),
   // referenced by index from Access.conn_limits.
   repeated ConnZone conn_zones = 9;
+  // Variables computed from others (nginx map, geo and split_clients),
+  // usable in every template as $name. A lookup's templates may use only
+  // the lookups before it.
+  repeated Lookup lookups = 10;
+}
+
+// Lookup defines the variable $name: source is expanded per request and
+// looked up in a table. The value is computed when the variable is first used
+// in a request and kept for the rest of it, as nginx caches variables.
+message Lookup {
+  // Variable name without '$': lowercase letters, digits and '_'.
+  string name = 1;
+  // Template; for geo the client address when empty.
+  string source = 2;
+  oneof kind {
+    LookupMap map = 3;
+    LookupGeo geo = 4;
+    LookupSplit split = 5;
+  }
+}
+
+// LookupMap is nginx map. Exact keys compare case-insensitively and win over
+// regexes, which are tried in order. Values are templates; a regex's groups
+// are $1..$9 in its value.
+message LookupMap {
+  repeated LookupMapEntry entries = 1;
+  // Template used when nothing matches.
+  string default = 2;
+  // nginx hostnames: keys may be "*.example.com", ".example.com" (the name
+  // and its subdomains) or "www.example.*"; a trailing dot of the source is
+  // ignored.
+  bool hostnames = 3;
+}
+
+message LookupMapEntry {
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    KIND_EXACT = 1;
+    KIND_REGEX = 2;
+    // Case-insensitive regex (nginx ~*).
+    KIND_REGEX_CI = 3;
+  }
+  Kind kind = 1;
+  string key = 2;
+  string value = 3;
+}
+
+// LookupGeo is nginx geo: the source is an IP address, matched against CIDRs
+// by longest prefix. A source that is not an address matches
+// 255.255.255.255.
+message LookupGeo {
+  repeated LookupGeoEntry entries = 1;
+  string default = 2;
+}
+
+message LookupGeoEntry {
+  string cidr = 1;
+  string value = 2;
+}
+
+// LookupSplit is nginx split_clients: the source's MurmurHash2 picks a part
+// by percentage, in order.
+message LookupSplit {
+  repeated LookupSplitPart parts = 1;
+}
+
+message LookupSplitPart {
+  // Hundredths of a percent; 0 takes the rest (nginx "*"). The total is at
+  // most 10000.
+  uint32 basis_points = 1;
+  string value = 2;
 }
 
 // RateZone is a leaky bucket per key, as nginx limit_req.
@@ -170,6 +241,9 @@ message Site {
   // chosen. Unset: not logged.
   optional uint32 access_log = 12;
   RealIp real_ip = 13;
+  // Compression of responses that have no route, such as a 404 for an
+  // unmatched path.
+  Compression compression = 14;
 }
 
 // Template strings (Rewrite.replacement, ReturnAction.text, TryFiles,
@@ -276,6 +350,7 @@ message Route {
   Access access = 14;
   // Response bandwidth per request (nginx limit_rate). Unset: unlimited.
   Bandwidth bandwidth = 15;
+  Compression compression = 16;
 }
 
 // Access holds the nginx preaccess and access phase settings of a route,
@@ -343,6 +418,58 @@ message ForwardAuth {
   // Lowercase response headers copied onto the request sent upstream on
   // success; they are also variables $auth_resp_<name>.
   repeated string copy_headers = 4;
+}
+
+// Compression encodes response bodies (nginx gzip, gzip_static and gunzip,
+// plus brotli and zstd).
+message Compression {
+  enum Encoding {
+    ENCODING_UNSPECIFIED = 0;
+    ENCODING_GZIP = 1;
+    ENCODING_BROTLI = 2;
+    ENCODING_ZSTD = 3;
+  }
+  // nginx gzip_proxied: which responses to requests with Via are encoded.
+  enum Proxied {
+    PROXIED_UNSPECIFIED = 0;
+    PROXIED_EXPIRED = 1;
+    PROXIED_NO_CACHE = 2;
+    PROXIED_NO_STORE = 3;
+    PROXIED_PRIVATE = 4;
+    PROXIED_NO_LAST_MODIFIED = 5;
+    PROXIED_NO_ETAG = 6;
+    PROXIED_AUTH = 7;
+    PROXIED_ANY = 8;
+  }
+  enum Static {
+    STATIC_UNSPECIFIED = 0;
+    // Serve file.gz to clients that accept gzip (gzip_static on).
+    STATIC_ON = 1;
+    // Serve file.gz to every client (gzip_static always).
+    STATIC_ALWAYS = 2;
+  }
+  // Dynamic encodings in order of preference. Empty: no dynamic encoding.
+  repeated Encoding encodings = 1;
+  // Lowercase media types besides text/html, which is always included; "*"
+  // for any.
+  repeated string types = 2;
+  // Responses with a shorter Content-Length are sent as is.
+  uint32 min_length = 3;
+  // gzip 1..9 (0: 1), brotli 0..11 (0: 6 unless set), zstd 1..22 (0: 3).
+  uint32 gzip_level = 4;
+  optional uint32 brotli_level = 5;
+  uint32 zstd_level = 6;
+  // Empty: responses to requests with Via are not encoded.
+  repeated Proxied proxied = 7;
+  // nginx gzip_vary: Vary: Accept-Encoding on encodable responses.
+  bool vary = 8;
+  Static static = 9;
+  // Decode gzip responses for clients that do not accept gzip (gunzip).
+  bool gunzip = 10;
+  // Also encode HTTP/1.0 responses (gzip_http_version 1.0).
+  bool http10 = 11;
+  // PCRE2 pattern; requests whose User-Agent matches are not encoded.
+  string disable = 12;
 }
 
 // Bandwidth throttles the response body of one request (nginx limit_rate and
