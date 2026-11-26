@@ -353,6 +353,20 @@ message Upstream {
     // Fewest active requests relative to weight, ties by round robin (nginx
     // least_conn).
     BALANCING_LEAST_CONN = 2;
+    // Client address: the first three octets of IPv4, all of IPv6 (nginx
+    // ip_hash).
+    BALANCING_IP_HASH = 3;
+    // hash_key, remapped like Cache::Memcached when a target is unavailable
+    // (nginx hash).
+    BALANCING_HASH = 4;
+    // hash_key on a ketama ring of 160 points per weight unit (nginx hash
+    // consistent).
+    BALANCING_HASH_CONSISTENT = 5;
+    // Weighted random (nginx random).
+    BALANCING_RANDOM = 6;
+    // The less loaded of two weighted random picks (nginx random two
+    // least_conn).
+    BALANCING_RANDOM_TWO = 7;
   }
   repeated Target targets = 1;
   Balancing balancing = 2;
@@ -372,6 +386,84 @@ message Upstream {
   // Host header sent upstream unless a header operation sets one: nginx
   // $proxy_host, the upstream's name. Empty: the target's host:port.
   string host = 9;
+  // Key for BALANCING_HASH and BALANCING_HASH_CONSISTENT, a template.
+  string hash_key = 10;
+  // Active health checks. Unset: none.
+  HealthCheck health_check = 11;
+  // Session affinity. Unset: none.
+  Sticky sticky = 12;
+  // Requests waiting for a target when every target is at max_conns
+  // (nginx queue). Zero: none, the request fails with 502.
+  uint32 queue_size = 13;
+  // How long a queued request waits. Zero: 60 s.
+  uint32 queue_timeout_ms = 14;
+  // Close an upstream connection after it has been open this long (nginx
+  // keepalive_time). Zero: 1 h.
+  uint32 keepalive_time_ms = 15;
+}
+
+// Active health checks run by every node against every target. A target
+// fails the check after `fails` failed probes in a row and passes it again
+// after `passes` good ones; while failing it takes no requests.
+message HealthCheck {
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    // HTTP/1.1 request; passes on an expected status and body.
+    KIND_HTTP = 1;
+    // TCP connect.
+    KIND_TCP = 2;
+  }
+  Kind kind = 1;
+  // Zero: 5 s.
+  uint32 interval_ms = 2;
+  // Per probe. Zero: 1 s.
+  uint32 timeout_ms = 3;
+  // Zero: 1.
+  uint32 fails = 4;
+  // Zero: 1.
+  uint32 passes = 5;
+  // HTTP: request path and query. Empty: "/".
+  string path = 6;
+  // HTTP: Host header. Empty: the upstream's host.
+  string host = 7;
+  // HTTP: passing statuses as ranges, e.g. 200-399. Empty: 200-399.
+  repeated StatusRange statuses = 8;
+  // HTTP: PCRE2 pattern the body must match. Empty: any body.
+  string body = 9;
+  // Probe this port instead of the target's.
+  uint32 port = 10;
+}
+
+message StatusRange {
+  uint32 from = 1;
+  uint32 to = 2;
+}
+
+// Session affinity (nginx sticky).
+message Sticky {
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    // The proxy sets a cookie naming the target (nginx sticky cookie).
+    KIND_COOKIE = 1;
+    // The target is named by a template, e.g. a cookie the application
+    // sets (nginx sticky route); its value is matched against Target.route.
+    KIND_ROUTE = 2;
+  }
+  Kind kind = 1;
+  // KIND_COOKIE: cookie name.
+  string cookie = 2;
+  // KIND_COOKIE: Max-Age in seconds. Zero: a session cookie.
+  uint32 max_age_s = 3;
+  // KIND_COOKIE: Path attribute. Empty: "/".
+  string path = 4;
+  // KIND_COOKIE: Domain attribute. Empty: none.
+  string domain = 5;
+  bool http_only = 6;
+  bool secure = 7;
+  // KIND_COOKIE: SameSite attribute: "strict", "lax", "none" or empty.
+  string same_site = 8;
+  // KIND_ROUTE: templates tried in order; the first non-empty value wins.
+  repeated string route = 9;
 }
 
 message Target {
@@ -380,4 +472,18 @@ message Target {
   uint32 weight = 2;
   // Used only when every other target is unavailable (nginx backup).
   bool backup = 3;
+  // Takes no requests (nginx down).
+  bool down = 4;
+  // Requests in progress at most. Zero: no limit (nginx max_conns).
+  uint32 max_conns = 5;
+  // After the target recovers, its weight grows from 1 to the configured
+  // weight over this time (nginx slow_start). Zero: at once.
+  uint32 slow_start_ms = 6;
+  // Re-resolve the host name every resolve_interval_ms while running and
+  // serve the addresses it has now (nginx resolve with resolver valid=).
+  bool resolve = 7;
+  // Zero: 30 s.
+  uint32 resolve_interval_ms = 8;
+  // Sticky route value naming this target (nginx server route=).
+  string route = 9;
 }

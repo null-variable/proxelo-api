@@ -703,9 +703,14 @@ type TargetStats struct {
 	state      protoimpl.MessageState `protogen:"open.v1"`
 	UpstreamId string                 `protobuf:"bytes,1,opt,name=upstream_id,json=upstreamId,proto3" json:"upstream_id,omitempty"`
 	// host:port as configured.
-	Address       string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	Attempts      uint64 `protobuf:"varint,3,opt,name=attempts,proto3" json:"attempts,omitempty"`
-	Failures      uint64 `protobuf:"varint,4,opt,name=failures,proto3" json:"failures,omitempty"`
+	Address  string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+	Attempts uint64 `protobuf:"varint,3,opt,name=attempts,proto3" json:"attempts,omitempty"`
+	Failures uint64 `protobuf:"varint,4,opt,name=failures,proto3" json:"failures,omitempty"`
+	// Whether the target takes requests: not down by passive or active
+	// health checks.
+	Healthy bool `protobuf:"varint,5,opt,name=healthy,proto3" json:"healthy,omitempty"`
+	// Last active health check failure, if failing.
+	CheckError    string `protobuf:"bytes,6,opt,name=check_error,json=checkError,proto3" json:"check_error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -766,6 +771,20 @@ func (x *TargetStats) GetFailures() uint64 {
 		return x.Failures
 	}
 	return 0
+}
+
+func (x *TargetStats) GetHealthy() bool {
+	if x != nil {
+		return x.Healthy
+	}
+	return false
+}
+
+func (x *TargetStats) GetCheckError() string {
+	if x != nil {
+		return x.CheckError
+	}
+	return ""
 }
 
 type Ack struct {
@@ -880,13 +899,16 @@ const file_proxelo_distrib_v1_distrib_proto_rawDesc = "" +
 	"\asite_id\x18\x01 \x01(\tR\x06siteId\x12\x0e\n" +
 	"\x02id\x18\x02 \x01(\tR\x02id\x12\x1a\n" +
 	"\brequests\x18\x03 \x01(\x04R\brequests\x12#\n" +
-	"\rserver_errors\x18\x04 \x01(\x04R\fserverErrors\"\x80\x01\n" +
+	"\rserver_errors\x18\x04 \x01(\x04R\fserverErrors\"\xbb\x01\n" +
 	"\vTargetStats\x12\x1f\n" +
 	"\vupstream_id\x18\x01 \x01(\tR\n" +
 	"upstreamId\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x1a\n" +
 	"\battempts\x18\x03 \x01(\x04R\battempts\x12\x1a\n" +
-	"\bfailures\x18\x04 \x01(\x04R\bfailures\"Q\n" +
+	"\bfailures\x18\x04 \x01(\x04R\bfailures\x12\x18\n" +
+	"\ahealthy\x18\x05 \x01(\bR\ahealthy\x12\x1f\n" +
+	"\vcheck_error\x18\x06 \x01(\tR\n" +
+	"checkError\"Q\n" +
 	"\x03Ack\x12\x1a\n" +
 	"\brevision\x18\x01 \x01(\x04R\brevision\x12\x18\n" +
 	"\aapplied\x18\x02 \x01(\bR\aapplied\x12\x14\n" +

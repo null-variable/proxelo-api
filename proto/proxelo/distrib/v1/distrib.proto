@@ -106,6 +106,11 @@ message TargetStats {
   string address = 2;
   uint64 attempts = 3;
   uint64 failures = 4;
+  // Whether the target takes requests: not down by passive or active
+  // health checks.
+  bool healthy = 5;
+  // Last active health check failure, if failing.
+  string check_error = 6;
 }
 
 message Ack {
