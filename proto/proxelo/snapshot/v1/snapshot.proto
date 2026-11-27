@@ -486,6 +486,8 @@ message Site {
   // Compression of responses that have no route, such as a 404 for an
   // unmatched path.
   Compression compression = 14;
+  // Filters of responses that have no route.
+  Filters filters = 15;
 }
 
 // Template strings (Rewrite.replacement, ReturnAction.text, TryFiles,
@@ -595,6 +597,141 @@ message Route {
   Compression compression = 16;
   // Only for proxy actions. Unset: not cached.
   Cache cache = 17;
+  // Header and body filters of the route's responses. Unset: none.
+  Filters filters = 18;
+  // Only internal redirects and subrequests reach the route; a client
+  // request that selects it gets 404 (nginx internal).
+  bool internal = 19;
+  // Copies of each request sent as background subrequests whose responses
+  // are discarded (nginx mirror). Unset: none.
+  Mirror mirror = 20;
+}
+
+// Filters run on responses in nginx order: userid and charset on the head;
+// on the body sub_filter, charset recoding, ssi, then addition, before
+// compression. Subrequests (ssi includes, addition, mirror) see only
+// their own route's filters, and userid, addition and mirror do not run
+// for them.
+message Filters {
+  SubFilter sub = 1;
+  Ssi ssi = 2;
+  Addition addition = 3;
+  Charset charset = 4;
+  Userid userid = 5;
+}
+
+// nginx sub_filter. Matching is case-insensitive.
+message SubFilter {
+  repeated SubPair pairs = 1;
+  // Replace every occurrence, not only the first of each pattern
+  // (sub_filter_once off).
+  bool all = 2;
+  // Keep Last-Modified and send ETag weak (sub_filter_last_modified on).
+  bool last_modified = 3;
+  // Lowercase media types besides text/html; "*" for any.
+  repeated string types = 4;
+}
+
+message SubPair {
+  // Template; empty after expansion: the pair is skipped.
+  string match = 1;
+  // Template, expanded once per request.
+  string replacement = 2;
+}
+
+// nginx ssi: include (virtual and file, as subrequests), echo, set,
+// if/elif/else/endif, config, block.
+message Ssi {
+  // Errors leave no "[an error occurred while processing the directive]"
+  // (ssi_silent_errors).
+  bool silent_errors = 1;
+  // Lowercase media types besides text/html; "*" for any.
+  repeated string types = 2;
+  // ssi_last_modified.
+  bool last_modified = 3;
+  // Longest parameter value (ssi_value_length). Zero: 256.
+  uint32 value_length = 4;
+}
+
+// nginx add_before_body and add_after_body: the bodies of subrequests to
+// these URIs around 200 responses of the listed types.
+message Addition {
+  string before = 1;
+  string after = 2;
+  // Lowercase media types besides text/html; "*" for any.
+  repeated string types = 3;
+}
+
+// nginx charset, source_charset, override_charset and charset_map.
+message Charset {
+  // Added to Content-Type as "; charset=". Empty: off.
+  string charset = 1;
+  // The charset of responses without one in their Content-Type. Empty:
+  // off.
+  string source = 2;
+  // Recode responses that state a charset too (override_charset).
+  bool override = 3;
+  // Lowercase media types; "*" for any. The control plane sends nginx's
+  // charset_types default when none are set.
+  repeated string types = 4;
+  // How bytes in `source` become bytes in `charset`, when they differ.
+  oneof recode {
+    // 256 bytes: the byte each source byte becomes.
+    bytes table = 5;
+    // `charset` is UTF-8: the code point of each byte of `source`.
+    CharsetCodes to_utf8 = 6;
+    // `source` is UTF-8: the code point of each byte of `charset`;
+    // characters without one are sent as "&#N;".
+    CharsetCodes from_utf8 = 7;
+  }
+}
+
+message CharsetCodes {
+  // 256 entries; 0 for a byte without a character.
+  repeated uint32 code_points = 1;
+}
+
+// nginx userid: a visitor cookie and $uid_got and $uid_set.
+message Userid {
+  enum Mode {
+    MODE_UNSPECIFIED = 0;
+    // Only $uid_got (userid log).
+    MODE_LOG = 1;
+    // Version 1 cookies (userid v1).
+    MODE_V1 = 2;
+    // Version 2 cookies (userid on).
+    MODE_ON = 3;
+  }
+  Mode mode = 1;
+  // Empty: "uid".
+  string name = 2;
+  // Empty: no Domain.
+  string domain = 3;
+  // Empty: "/".
+  string path = 4;
+  // Seconds. Zero: a session cookie.
+  uint32 expires_s = 5;
+  // expires=Thu, 31-Dec-37 23:55:55 GMT (userid_expires max).
+  bool expires_max = 6;
+  bool secure = 7;
+  bool http_only = 8;
+  // "strict", "lax", "none" or empty.
+  string same_site = 9;
+  // Sent as a P3P header. Empty: none.
+  string p3p = 10;
+  // The first word of the identifier (userid_service). Unset: the local
+  // IPv4 address for version 2, 0 for version 1.
+  optional uint32 service = 11;
+  // A letter, digit or "=" written into cookies (userid_mark). Empty: off.
+  string mark = 12;
+}
+
+// nginx mirror.
+message Mirror {
+  // Paths, each requested with the method and headers of the original.
+  repeated string uris = 1;
+  // The original body goes along (mirror_request_body).
+  bool request_body = 2;
 }
 
 // Access holds the nginx preaccess and access phase settings of a route,
@@ -936,6 +1073,17 @@ message StaticAction {
   Dav dav = 6;
   // ?start=N serves a file from byte N after an FLV header (nginx flv).
   bool flv = 7;
+  // ?start= and ?end= (seconds) cut an MP4 file, rewriting its moov
+  // atom (nginx mp4). Unset: off.
+  Mp4 mp4 = 8;
+}
+
+message Mp4 {
+  // Largest moov atom read (mp4_max_buffer_size). Zero: 10 MiB.
+  uint32 max_buffer_size = 1;
+  // Start at the key frame before ?start= and drop the frames before the
+  // requested time from presentation (mp4_start_key_frame).
+  bool start_key_frame = 2;
 }
 
 // Autoindex is nginx autoindex with its format, time zone and sizes.
