@@ -42,7 +42,8 @@ message Snapshot {
 message CacheZone {
   // Control plane resource ID.
   string id = 1;
-  // Absolute directory; created when missing.
+  // Directory, created when missing. A relative path is under the
+  // proxy's data directory, in proxy/cache.
   string path = 2;
   // Subdirectory name lengths from the end of the hash, each 1 or 2, at
   // most 3 (levels=1:2). Empty: entries directly under path.

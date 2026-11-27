@@ -1200,7 +1200,8 @@ type CacheZone struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Control plane resource ID.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Absolute directory; created when missing.
+	// Directory, created when missing. A relative path is under the
+	// proxy's data directory, in proxy/cache.
 	Path string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
 	// Subdirectory name lengths from the end of the hash, each 1 or 2, at
 	// most 3 (levels=1:2). Empty: entries directly under path.
