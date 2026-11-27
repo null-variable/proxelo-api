@@ -116,6 +116,9 @@ message TapEvent {
   repeated TapHeader headers = 13;
   // "1.1" or "2".
   string protocol = 14;
+  // IDs of the rules proxy-wasm filters reported matching, from their
+  // ModSecurity-style `[id "N"]` log lines, such as the WAF's.
+  repeated uint32 waf_rules = 15;
 }
 
 message TapHeader {

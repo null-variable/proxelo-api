@@ -649,7 +649,10 @@ type TapEvent struct {
 	// Values of the requested headers that the request had.
 	Headers []*TapHeader `protobuf:"bytes,13,rep,name=headers,proto3" json:"headers,omitempty"`
 	// "1.1" or "2".
-	Protocol      string `protobuf:"bytes,14,opt,name=protocol,proto3" json:"protocol,omitempty"`
+	Protocol string `protobuf:"bytes,14,opt,name=protocol,proto3" json:"protocol,omitempty"`
+	// IDs of the rules proxy-wasm filters reported matching, from their
+	// ModSecurity-style `[id "N"]` log lines, such as the WAF's.
+	WafRules      []uint32 `protobuf:"varint,15,rep,packed,name=waf_rules,json=wafRules,proto3" json:"waf_rules,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -780,6 +783,13 @@ func (x *TapEvent) GetProtocol() string {
 		return x.Protocol
 	}
 	return ""
+}
+
+func (x *TapEvent) GetWafRules() []uint32 {
+	if x != nil {
+		return x.WafRules
+	}
+	return nil
 }
 
 type TapHeader struct {
@@ -1584,7 +1594,7 @@ const file_proxelo_distrib_v1_distrib_proto_rawDesc = "" +
 	"\tTapEvents\x12\x15\n" +
 	"\x06tap_id\x18\x01 \x01(\tR\x05tapId\x124\n" +
 	"\x06events\x18\x02 \x03(\v2\x1c.proxelo.distrib.v1.TapEventR\x06events\x12\x18\n" +
-	"\adropped\x18\x03 \x01(\x04R\adropped\"\x9f\x03\n" +
+	"\adropped\x18\x03 \x01(\x04R\adropped\"\xbc\x03\n" +
 	"\bTapEvent\x12\x17\n" +
 	"\atime_us\x18\x01 \x01(\x03R\x06timeUs\x12\x17\n" +
 	"\asite_id\x18\x02 \x01(\tR\x06siteId\x12\x19\n" +
@@ -1602,7 +1612,8 @@ const file_proxelo_distrib_v1_distrib_proto_rawDesc = "" +
 	"\n" +
 	"bytes_sent\x18\f \x01(\x04R\tbytesSent\x127\n" +
 	"\aheaders\x18\r \x03(\v2\x1d.proxelo.distrib.v1.TapHeaderR\aheaders\x12\x1a\n" +
-	"\bprotocol\x18\x0e \x01(\tR\bprotocol\"5\n" +
+	"\bprotocol\x18\x0e \x01(\tR\bprotocol\x12\x1b\n" +
+	"\twaf_rules\x18\x0f \x03(\rR\bwafRules\"5\n" +
 	"\tTapHeader\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value\"\x8c\x01\n" +
