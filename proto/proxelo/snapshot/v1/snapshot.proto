@@ -1017,6 +1017,10 @@ message Upstream {
   uint32 keepalive_time_ms = 15;
   // Connect to targets over TLS (proxy_pass https://). Unset: plain TCP.
   UpstreamTls tls = 16;
+  // A discovery provider of the control plane supplies more targets at run
+  // time (distrib DiscoveredTargets), added to these. targets may then be
+  // empty; requests fail with 502 until some arrive.
+  bool discovered = 17;
 }
 
 // UpstreamTls are nginx proxy_ssl_* settings.

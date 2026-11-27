@@ -35,7 +35,18 @@ message SyncResponse {
     TapFilter tap = 4;
     Purge purge = 5;
     WasmChunk wasm_chunk = 6;
+    DiscoveredTargets discovered = 7;
   }
+}
+
+// DiscoveredTargets replaces the targets a discovery provider found for one
+// upstream, by its control plane ID. They apply to the upstream of that ID
+// in every snapshot the proxy serves, without a new snapshot, until replaced.
+// They are not persisted: the control plane sends them again on connect.
+message DiscoveredTargets {
+  string upstream_id = 1;
+  // host:port, an IP address with a port.
+  repeated string addresses = 2;
 }
 
 // Purge removes cache entries of one zone. An entry goes when any of keys,

@@ -5537,7 +5537,11 @@ type Upstream struct {
 	// keepalive_time). Zero: 1 h.
 	KeepaliveTimeMs uint32 `protobuf:"varint,15,opt,name=keepalive_time_ms,json=keepaliveTimeMs,proto3" json:"keepalive_time_ms,omitempty"`
 	// Connect to targets over TLS (proxy_pass https://). Unset: plain TCP.
-	Tls           *UpstreamTls `protobuf:"bytes,16,opt,name=tls,proto3" json:"tls,omitempty"`
+	Tls *UpstreamTls `protobuf:"bytes,16,opt,name=tls,proto3" json:"tls,omitempty"`
+	// A discovery provider of the control plane supplies more targets at run
+	// time (distrib DiscoveredTargets), added to these. targets may then be
+	// empty; requests fail with 502 until some arrive.
+	Discovered    bool `protobuf:"varint,17,opt,name=discovered,proto3" json:"discovered,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5682,6 +5686,13 @@ func (x *Upstream) GetTls() *UpstreamTls {
 		return x.Tls
 	}
 	return nil
+}
+
+func (x *Upstream) GetDiscovered() bool {
+	if x != nil {
+		return x.Discovered
+	}
+	return false
 }
 
 // UpstreamTls are nginx proxy_ssl_* settings.
@@ -6701,7 +6712,7 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\x0fsend_timeout_ms\x18\x03 \x01(\rR\rsendTimeoutMs\x12&\n" +
 	"\x0fread_timeout_ms\x18\x04 \x01(\rR\rreadTimeoutMs\x12F\n" +
 	"\rnext_upstream\x18\x05 \x03(\x0e2!.proxelo.snapshot.v1.NextUpstreamR\fnextUpstream\x12.\n" +
-	"\x13next_upstream_tries\x18\x06 \x01(\rR\x11nextUpstreamTries\"\x8f\a\n" +
+	"\x13next_upstream_tries\x18\x06 \x01(\rR\x11nextUpstreamTries\"\xaf\a\n" +
 	"\bUpstream\x125\n" +
 	"\atargets\x18\x01 \x03(\v2\x1b.proxelo.snapshot.v1.TargetR\atargets\x12E\n" +
 	"\tbalancing\x18\x02 \x01(\x0e2'.proxelo.snapshot.v1.Upstream.BalancingR\tbalancing\x12%\n" +
@@ -6720,7 +6731,10 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"queue_size\x18\r \x01(\rR\tqueueSize\x12(\n" +
 	"\x10queue_timeout_ms\x18\x0e \x01(\rR\x0equeueTimeoutMs\x12*\n" +
 	"\x11keepalive_time_ms\x18\x0f \x01(\rR\x0fkeepaliveTimeMs\x122\n" +
-	"\x03tls\x18\x10 \x01(\v2 .proxelo.snapshot.v1.UpstreamTlsR\x03tls\"\xd5\x01\n" +
+	"\x03tls\x18\x10 \x01(\v2 .proxelo.snapshot.v1.UpstreamTlsR\x03tls\x12\x1e\n" +
+	"\n" +
+	"discovered\x18\x11 \x01(\bR\n" +
+	"discovered\"\xd5\x01\n" +
 	"\tBalancing\x12\x19\n" +
 	"\x15BALANCING_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15BALANCING_ROUND_ROBIN\x10\x01\x12\x18\n" +
