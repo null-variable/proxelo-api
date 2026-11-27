@@ -2711,7 +2711,12 @@ type Listener struct {
 	// TLS on this listener. Unset: plain TCP.
 	Tls *ListenerTls `protobuf:"bytes,6,opt,name=tls,proto3" json:"tls,omitempty"`
 	// Offer HTTP/2 through ALPN. Only with tls.
-	Http2         bool `protobuf:"varint,7,opt,name=http2,proto3" json:"http2,omitempty"`
+	Http2 bool `protobuf:"varint,7,opt,name=http2,proto3" json:"http2,omitempty"`
+	// Also serve HTTP/3 over QUIC on the same UDP address, and advertise it
+	// with Alt-Svc on TLS responses (nginx listen quic). Only with tls. QUIC
+	// uses TLS 1.3 and the same certificates; the other tls settings do not
+	// apply to it.
+	Http3         bool `protobuf:"varint,8,opt,name=http3,proto3" json:"http3,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2791,6 +2796,13 @@ func (x *Listener) GetTls() *ListenerTls {
 func (x *Listener) GetHttp2() bool {
 	if x != nil {
 		return x.Http2
+	}
+	return false
+}
+
+func (x *Listener) GetHttp3() bool {
+	if x != nil {
+		return x.Http3
 	}
 	return false
 }
@@ -5942,7 +5954,7 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\vHeaderValue\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value\x12\x16\n" +
-	"\x06always\x18\x03 \x01(\bR\x06always\"\xf0\x01\n" +
+	"\x06always\x18\x03 \x01(\bR\x06always\"\x86\x02\n" +
 	"\bListener\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x1d\n" +
 	"\n" +
@@ -5951,7 +5963,8 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\fdefault_site\x18\x04 \x01(\rH\x00R\vdefaultSite\x88\x01\x01\x12\x0e\n" +
 	"\x02id\x18\x05 \x01(\tR\x02id\x122\n" +
 	"\x03tls\x18\x06 \x01(\v2 .proxelo.snapshot.v1.ListenerTlsR\x03tls\x12\x14\n" +
-	"\x05http2\x18\a \x01(\bR\x05http2B\x0f\n" +
+	"\x05http2\x18\a \x01(\bR\x05http2\x12\x14\n" +
+	"\x05http3\x18\b \x01(\bR\x05http3B\x0f\n" +
 	"\r_default_site\"\xaa\x05\n" +
 	"\vListenerTls\x12I\n" +
 	"\vmin_version\x18\x01 \x01(\x0e2(.proxelo.snapshot.v1.ListenerTls.VersionR\n" +
