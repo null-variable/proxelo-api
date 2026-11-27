@@ -926,6 +926,50 @@ message StaticAction {
   string root = 1;
   repeated string index = 2;
   TryFiles try_files = 3;
+  // A listing of a directory without an index file (nginx autoindex).
+  // Unset: off.
+  Autoindex autoindex = 4;
+  // A directory request goes, as an internal redirect, to a random regular
+  // file in it, before index (nginx random_index).
+  bool random_index = 5;
+  // WebDAV methods (nginx dav_methods). Unset: off.
+  Dav dav = 6;
+  // ?start=N serves a file from byte N after an FLV header (nginx flv).
+  bool flv = 7;
+}
+
+// Autoindex is nginx autoindex with its format, time zone and sizes.
+message Autoindex {
+  enum Format {
+    // HTML.
+    FORMAT_UNSPECIFIED = 0;
+    FORMAT_JSON = 1;
+    // JSON wrapped in the function the callback argument names; JSON
+    // without one.
+    FORMAT_JSONP = 2;
+    FORMAT_XML = 3;
+  }
+  Format format = 1;
+  // HTML times in the local time zone instead of UTC.
+  bool localtime = 2;
+  // HTML sizes rounded to K, M and G (autoindex_exact_size off).
+  bool approximate_size = 3;
+}
+
+// Dav is nginx dav_methods and the settings that go with it.
+message Dav {
+  bool put = 1;
+  bool delete = 2;
+  bool mkcol = 3;
+  bool copy = 4;
+  bool move = 5;
+  // PUT creates missing parent directories.
+  bool create_full_put_path = 6;
+  // DELETE needs at least this many path segments.
+  uint32 min_delete_depth = 7;
+  // Permission bits of created files; directories also get x where r is
+  // set (nginx dav_access). Zero: 0600.
+  uint32 access = 8;
 }
 
 message ProxyAction {
