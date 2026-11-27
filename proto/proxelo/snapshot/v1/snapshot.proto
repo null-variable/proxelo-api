@@ -562,8 +562,8 @@ message Route {
 }
 
 // Access holds the nginx preaccess and access phase settings of a route,
-// run in nginx order: rate_limits, conn_limits, rules, basic_auth,
-// forward_auth. The limits apply once per request, from the first route
+// run in nginx order: rate_limits, conn_limits, rules, basic_auth, jwt,
+// oidc, forward_auth. The limits apply once per request, from the first route
 // reached that has any; the others run for every route an internal redirect
 // reaches, and their 401, 403, 429 or 503 goes through the error pages.
 message Access {
@@ -576,6 +576,8 @@ message Access {
   repeated AccessRule rules = 3;
   BasicAuth basic_auth = 4;
   ForwardAuth forward_auth = 5;
+  Jwt jwt = 6;
+  Oidc oidc = 7;
 }
 
 // RealIp replaces the client address with one a trusted proxy sent (nginx
@@ -626,6 +628,62 @@ message ForwardAuth {
   // Lowercase response headers copied onto the request sent upstream on
   // success; they are also variables $auth_resp_<name>.
   repeated string copy_headers = 4;
+}
+
+// Jwt is nginx auth_jwt: a JSON Web Token (JWS, compact form) must carry a
+// valid signature by one of the keys and, when present, an unexpired exp
+// and a reached nbf claim. A missing or invalid token gets 401 with
+// WWW-Authenticate: Bearer. The claims become variables $jwt_claim_<name>
+// and the header fields $jwt_header_<name>: strings as they are, arrays of
+// strings joined with ",", other values as JSON text.
+message Jwt {
+  // Realm of the WWW-Authenticate challenge.
+  string realm = 1;
+  // Template giving the token. Empty: the Bearer credentials of the
+  // Authorization header.
+  string token = 2;
+  // A JSON Web Key Set (RFC 7517) given inline (auth_jwt_key_file).
+  bytes jwks = 3;
+  // An http or https URL of a JSON Web Key Set, fetched by the proxy and
+  // used together with the inline keys.
+  string jwks_url = 4;
+  // How long fetched keys are used (auth_jwt_key_cache). 0: 1 hour. A
+  // token with an unknown kid fetches again, at most once every 10 s.
+  uint32 key_cache_s = 5;
+  // Required iss claim. Empty: any.
+  string issuer = 6;
+  // The aud claim must hold one of these. Empty: any.
+  repeated string audiences = 7;
+  // Clock skew allowed for exp and nbf, in seconds (auth_jwt_leeway).
+  uint32 leeway_s = 8;
+}
+
+// Oidc signs users in with an OpenID Connect provider (authorization code
+// flow with PKCE) and keeps them in a session cookie, as nginx Plus
+// auth_oidc. The provider is found through
+// <issuer>/.well-known/openid-configuration. Requests without a session are
+// redirected to the provider; the ID token's sub and email become
+// $oidc_sub and $oidc_email.
+message Oidc {
+  string issuer = 1;
+  string client_id = 2;
+  // Sent with HTTP Basic authentication to the token endpoint. The
+  // session cookie is signed with a key derived from it.
+  string client_secret = 3;
+  // Where the provider sends the user back: a path on the request's
+  // origin, or an absolute URL. It must reach a route with this policy.
+  // Empty: "/oidc_callback".
+  string redirect_uri = 4;
+  // Empty: "openid". "openid" is added when missing.
+  repeated string scopes = 5;
+  // Session cookie name. Empty: "proxelo_oidc".
+  string cookie = 6;
+  // Session lifetime in seconds. 0: 8 hours.
+  uint32 session_timeout_s = 7;
+  // A path that ends the session: the cookie is cleared and the user is
+  // sent to the provider's end_session_endpoint, or to post_logout_uri.
+  string logout_uri = 8;
+  string post_logout_uri = 9;
 }
 
 // Compression encodes response bodies (nginx gzip, gzip_static and gunzip,
