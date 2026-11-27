@@ -34,6 +34,7 @@ message SyncResponse {
     Challenges challenges = 2;
     TapFilter tap = 4;
     Purge purge = 5;
+    WasmChunk wasm_chunk = 6;
   }
 }
 
@@ -150,6 +151,19 @@ message Hello {
   string proxy_version = 2;
   // Revision of the last-known-good snapshot the proxy is serving, 0 if none.
   uint64 active_revision = 3;
+  // SHA-256 (lowercase hex) of the WebAssembly modules the proxy has
+  // stored, so they are not sent again.
+  repeated string wasm_modules = 4;
+}
+
+// WasmChunk is part of a WebAssembly module's bytes. A module is sent in
+// order from offset 0; the chunk with last set completes it, and the proxy
+// keeps it only when the bytes hash to sha256.
+message WasmChunk {
+  string sha256 = 1;
+  uint64 offset = 2;
+  bytes data = 3;
+  bool last = 4;
 }
 
 // Stats are counters cumulative since the proxy started, sent every few

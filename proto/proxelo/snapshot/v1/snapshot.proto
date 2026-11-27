@@ -33,6 +33,42 @@ message Snapshot {
   // Route.cache. Entries on disk and the index carry over snapshots by zone
   // ID while the path stays the same.
   repeated CacheZone cache_zones = 12;
+  // WebAssembly modules, referenced by index from WasmFilter.module. The
+  // bytes are not part of the snapshot: the control plane sends them on
+  // the distribution stream (WasmChunk) before a snapshot that needs them.
+  repeated WasmModule wasm_modules = 13;
+}
+
+// WasmModule names a module by the SHA-256 of its bytes.
+message WasmModule {
+  // Lowercase hex SHA-256.
+  string sha256 = 1;
+}
+
+// WasmFilter runs a proxy-wasm (ABI 0.2) plugin on the requests of a
+// route: request headers and body in the access phase, response headers
+// before they are sent. A plugin that answers itself (local response) ends
+// the request with that answer.
+message WasmFilter {
+  // Index into Snapshot.wasm_modules.
+  uint32 module = 1;
+  // Name the plugin sees as plugin_name, and in logs.
+  string name = 2;
+  // proxy_on_configure's plugin configuration.
+  bytes configuration = 3;
+  // proxy_on_vm_start's VM configuration.
+  bytes vm_configuration = 4;
+  // When the plugin fails (a trap, an exhausted time or memory limit) the
+  // request continues as if it were not there; otherwise it gets 500.
+  bool fail_open = 5;
+  // Buffer the request body, up to max_body bytes, and hand it to the
+  // plugin before it goes upstream. A larger body gets 413.
+  bool request_body = 6;
+  uint64 max_body = 7;
+  // Memory limit of one instance in bytes. 0: 256 MiB.
+  uint64 max_memory = 8;
+  // Time one callback may run, in milliseconds. 0: 1000.
+  uint32 timeout_ms = 9;
 }
 
 // CacheZone is one response cache on disk (nginx proxy_cache_path). Each
@@ -563,7 +599,7 @@ message Route {
 
 // Access holds the nginx preaccess and access phase settings of a route,
 // run in nginx order: rate_limits, conn_limits, rules, basic_auth, jwt,
-// oidc, forward_auth. The limits apply once per request, from the first route
+// oidc, wasm, forward_auth. The limits apply once per request, from the first route
 // reached that has any; the others run for every route an internal redirect
 // reaches, and their 401, 403, 429 or 503 goes through the error pages.
 message Access {
@@ -578,6 +614,8 @@ message Access {
   ForwardAuth forward_auth = 5;
   Jwt jwt = 6;
   Oidc oidc = 7;
+  // proxy-wasm filters, including the WAF, in order.
+  repeated WasmFilter wasm = 8;
 }
 
 // RealIp replaces the client address with one a trusted proxy sent (nginx
