@@ -1,0 +1,46 @@
+# Checks and code generation in a container, against this checkout:
+#   docker compose run --rm lint       # buf lint and format
+#   docker compose run --rm generate   # buf generate into gen/go
+#   docker compose run --rm check      # everything CI checks
+name: proxelo-api
+
+x-tools: &tools
+  build: .
+  image: proxelo-api-tools:local
+  volumes:
+    - .:/src
+    - go-mod:/go/pkg/mod
+    - go-cache:/root/.cache/go-build
+    - cargo-registry:/usr/local/cargo/registry
+    - rust-target:/src/rust/target
+  profiles: [tools]
+
+services:
+  lint:
+    <<: *tools
+    command: sh -c "buf lint && buf format --diff --exit-code"
+  generate:
+    <<: *tools
+    command: buf generate
+  check:
+    <<: *tools
+    command:
+      - sh
+      - -ec
+      - |
+        buf lint
+        buf format --diff --exit-code
+        buf generate
+        git diff --exit-code -- gen/go
+        go build ./...
+        go vet ./...
+        cd rust
+        cargo fmt --check
+        cargo clippy --all-targets -- -D warnings
+        cargo build
+
+volumes:
+  go-mod:
+  go-cache:
+  cargo-registry:
+  rust-target:

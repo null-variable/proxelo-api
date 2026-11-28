@@ -72,7 +72,7 @@ Rust (`Cargo.toml`):
 
 ```toml
 [dependencies]
-proxelo-api = { git = "https://github.com/null-variable/proxelo-api", tag = "v0.9.0" }
+proxelo-api = { git = "https://github.com/null-variable/proxelo-api", tag = "v0.23.0" }
 ```
 
 ```rust
@@ -81,13 +81,31 @@ use proxelo_api::snapshot::v1::Snapshot;
 
 ## Development
 
-Requires [buf](https://buf.build) and a Rust toolchain.
+Requires [buf](https://buf.build), Go and a Rust toolchain.
 
 ```sh
 buf lint
+buf format --diff --exit-code
 buf generate          # regenerates gen/go
+go build ./...
 cd rust && cargo build
 ```
+
+### Docker Compose
+
+There is nothing to run: this repository is a library. The `Dockerfile` is a
+toolchain image (buf 1.75.0, Go, Rust with clippy and rustfmt), and
+`compose.yaml` runs it against the checkout, so the commands above need only
+Docker:
+
+```sh
+docker compose run --rm lint       # buf lint and format
+docker compose run --rm generate   # buf generate into gen/go
+docker compose run --rm check      # what CI checks: lint, format, generated code, Go and Rust builds
+```
+
+Generated files land in the checkout. The Go module and Rust build caches are
+kept in named volumes; `docker compose down -v` removes them.
 
 ## Compatibility
 
