@@ -6655,8 +6655,34 @@ type ProxyAction struct {
 	// fastcgi_intercept_errors and the like); a 401 keeps its
 	// WWW-Authenticate. Not for memcached actions.
 	InterceptErrors bool `protobuf:"varint,11,opt,name=intercept_errors,json=interceptErrors,proto3" json:"intercept_errors,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// Upstream response headers the proxy hides by default that are passed
+	// on, lowercase: date, server, x-pad and x-accel-* (proxy_pass_header). A
+	// passed Date or Server replaces the proxy's own. Not for memcached
+	// actions.
+	PassHeaders []string `protobuf:"bytes,12,rep,name=pass_headers,json=passHeaders,proto3" json:"pass_headers,omitempty"`
+	// Template of the method sent upstream (proxy_method). Empty: the
+	// client's. A HEAD request keeps HEAD, and a request an error page or
+	// the cache made a GET stays GET. Only for proxy actions.
+	Method string `protobuf:"bytes,13,opt,name=method,proto3" json:"method,omitempty"`
+	// Template of the request body sent upstream in place of the client's,
+	// with its Content-Length (proxy_set_body). Only for proxy actions.
+	Body *string `protobuf:"bytes,14,opt,name=body,proto3,oneof" json:"body,omitempty"`
+	// The client's request headers are not sent; Host, the body framing and
+	// the route's request header operations are (proxy_pass_request_headers
+	// off). Only for proxy actions.
+	NoRequestHeaders bool `protobuf:"varint,15,opt,name=no_request_headers,json=noRequestHeaders,proto3" json:"no_request_headers,omitempty"`
+	// The client's request body is read and dropped, and the request goes
+	// without a body (proxy_pass_request_body off). Only for proxy actions.
+	NoRequestBody bool `protobuf:"varint,16,opt,name=no_request_body,json=noRequestBody,proto3" json:"no_request_body,omitempty"`
+	// Bytes per second read from the upstream for one request
+	// (proxy_limit_rate). Zero: no limit. Not for grpc and memcached actions.
+	LimitRate uint64 `protobuf:"varint,17,opt,name=limit_rate,json=limitRate,proto3" json:"limit_rate,omitempty"`
+	// Template of the local address of upstream connections, an IP address
+	// with an optional port (proxy_bind); an empty expansion lets the system
+	// choose. Empty: the system chooses. Not for grpc actions.
+	Bind          string `protobuf:"bytes,18,opt,name=bind,proto3" json:"bind,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ProxyAction) Reset() {
@@ -6764,6 +6790,55 @@ func (x *ProxyAction) GetInterceptErrors() bool {
 		return x.InterceptErrors
 	}
 	return false
+}
+
+func (x *ProxyAction) GetPassHeaders() []string {
+	if x != nil {
+		return x.PassHeaders
+	}
+	return nil
+}
+
+func (x *ProxyAction) GetMethod() string {
+	if x != nil {
+		return x.Method
+	}
+	return ""
+}
+
+func (x *ProxyAction) GetBody() string {
+	if x != nil && x.Body != nil {
+		return *x.Body
+	}
+	return ""
+}
+
+func (x *ProxyAction) GetNoRequestHeaders() bool {
+	if x != nil {
+		return x.NoRequestHeaders
+	}
+	return false
+}
+
+func (x *ProxyAction) GetNoRequestBody() bool {
+	if x != nil {
+		return x.NoRequestBody
+	}
+	return false
+}
+
+func (x *ProxyAction) GetLimitRate() uint64 {
+	if x != nil {
+		return x.LimitRate
+	}
+	return 0
+}
+
+func (x *ProxyAction) GetBind() string {
+	if x != nil {
+		return x.Bind
+	}
+	return ""
 }
 
 // HeaderRewrite replaces a header value that matches pattern; a Set-Cookie
@@ -8189,7 +8264,7 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\x04move\x18\x05 \x01(\bR\x04move\x12/\n" +
 	"\x14create_full_put_path\x18\x06 \x01(\bR\x11createFullPutPath\x12(\n" +
 	"\x10min_delete_depth\x18\a \x01(\rR\x0eminDeleteDepth\x12\x16\n" +
-	"\x06access\x18\b \x01(\rR\x06access\"\xe3\x04\n" +
+	"\x06access\x18\b \x01(\rR\x06access\"\xc9\x06\n" +
 	"\vProxyAction\x12\x1a\n" +
 	"\bupstream\x18\x01 \x01(\rR\bupstream\x12,\n" +
 	"\x12connect_timeout_ms\x18\x02 \x01(\rR\x10connectTimeoutMs\x12&\n" +
@@ -8202,7 +8277,16 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\fcookie_paths\x18\t \x03(\v2\".proxelo.snapshot.v1.HeaderRewriteR\vcookiePaths\x12C\n" +
 	"\fcookie_flags\x18\n" +
 	" \x03(\v2 .proxelo.snapshot.v1.CookieFlagsR\vcookieFlags\x12)\n" +
-	"\x10intercept_errors\x18\v \x01(\bR\x0finterceptErrors\"\xe0\x01\n" +
+	"\x10intercept_errors\x18\v \x01(\bR\x0finterceptErrors\x12!\n" +
+	"\fpass_headers\x18\f \x03(\tR\vpassHeaders\x12\x16\n" +
+	"\x06method\x18\r \x01(\tR\x06method\x12\x17\n" +
+	"\x04body\x18\x0e \x01(\tH\x00R\x04body\x88\x01\x01\x12,\n" +
+	"\x12no_request_headers\x18\x0f \x01(\bR\x10noRequestHeaders\x12&\n" +
+	"\x0fno_request_body\x18\x10 \x01(\bR\rnoRequestBody\x12\x1d\n" +
+	"\n" +
+	"limit_rate\x18\x11 \x01(\x04R\tlimitRate\x12\x12\n" +
+	"\x04bind\x18\x12 \x01(\tR\x04bindB\a\n" +
+	"\x05_body\"\xe0\x01\n" +
 	"\rHeaderRewrite\x12;\n" +
 	"\x04kind\x18\x01 \x01(\x0e2'.proxelo.snapshot.v1.HeaderRewrite.KindR\x04kind\x12\x18\n" +
 	"\apattern\x18\x02 \x01(\tR\apattern\x12 \n" +
@@ -8590,6 +8674,7 @@ func file_proxelo_snapshot_v1_snapshot_proto_init() {
 		(*TryFiles_Status)(nil),
 		(*TryFiles_Named)(nil),
 	}
+	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[61].OneofWrappers = []any{}
 	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[65].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

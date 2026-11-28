@@ -1152,6 +1152,32 @@ message ProxyAction {
   // fastcgi_intercept_errors and the like); a 401 keeps its
   // WWW-Authenticate. Not for memcached actions.
   bool intercept_errors = 11;
+  // Upstream response headers the proxy hides by default that are passed
+  // on, lowercase: date, server, x-pad and x-accel-* (proxy_pass_header). A
+  // passed Date or Server replaces the proxy's own. Not for memcached
+  // actions.
+  repeated string pass_headers = 12;
+  // Template of the method sent upstream (proxy_method). Empty: the
+  // client's. A HEAD request keeps HEAD, and a request an error page or
+  // the cache made a GET stays GET. Only for proxy actions.
+  string method = 13;
+  // Template of the request body sent upstream in place of the client's,
+  // with its Content-Length (proxy_set_body). Only for proxy actions.
+  optional string body = 14;
+  // The client's request headers are not sent; Host, the body framing and
+  // the route's request header operations are (proxy_pass_request_headers
+  // off). Only for proxy actions.
+  bool no_request_headers = 15;
+  // The client's request body is read and dropped, and the request goes
+  // without a body (proxy_pass_request_body off). Only for proxy actions.
+  bool no_request_body = 16;
+  // Bytes per second read from the upstream for one request
+  // (proxy_limit_rate). Zero: no limit. Not for grpc and memcached actions.
+  uint64 limit_rate = 17;
+  // Template of the local address of upstream connections, an IP address
+  // with an optional port (proxy_bind); an empty expansion lets the system
+  // choose. Empty: the system chooses. Not for grpc actions.
+  string bind = 18;
 }
 
 // HeaderRewrite replaces a header value that matches pattern; a Set-Cookie
