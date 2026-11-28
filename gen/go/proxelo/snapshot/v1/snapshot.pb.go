@@ -975,6 +975,64 @@ func (Autoindex_Format) EnumDescriptor() ([]byte, []int) {
 	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{59, 0}
 }
 
+type HeaderRewrite_Kind int32
+
+const (
+	// The value starts with pattern, a template; that part is replaced.
+	HeaderRewrite_KIND_UNSPECIFIED HeaderRewrite_Kind = 0
+	// PCRE2 searched in the value, which is replaced whole; the replacement
+	// may use the groups as $1..$9.
+	HeaderRewrite_KIND_REGEX HeaderRewrite_Kind = 1
+	// KIND_REGEX ignoring case.
+	HeaderRewrite_KIND_REGEX_CASELESS HeaderRewrite_Kind = 2
+	// A cookie domain equal to pattern, a template, ignoring case and a
+	// leading dot, which stays.
+	HeaderRewrite_KIND_DOMAIN HeaderRewrite_Kind = 3
+)
+
+// Enum value maps for HeaderRewrite_Kind.
+var (
+	HeaderRewrite_Kind_name = map[int32]string{
+		0: "KIND_UNSPECIFIED",
+		1: "KIND_REGEX",
+		2: "KIND_REGEX_CASELESS",
+		3: "KIND_DOMAIN",
+	}
+	HeaderRewrite_Kind_value = map[string]int32{
+		"KIND_UNSPECIFIED":    0,
+		"KIND_REGEX":          1,
+		"KIND_REGEX_CASELESS": 2,
+		"KIND_DOMAIN":         3,
+	}
+)
+
+func (x HeaderRewrite_Kind) Enum() *HeaderRewrite_Kind {
+	p := new(HeaderRewrite_Kind)
+	*p = x
+	return p
+}
+
+func (x HeaderRewrite_Kind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (HeaderRewrite_Kind) Descriptor() protoreflect.EnumDescriptor {
+	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[16].Descriptor()
+}
+
+func (HeaderRewrite_Kind) Type() protoreflect.EnumType {
+	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[16]
+}
+
+func (x HeaderRewrite_Kind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use HeaderRewrite_Kind.Descriptor instead.
+func (HeaderRewrite_Kind) EnumDescriptor() ([]byte, []int) {
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{62, 0}
+}
+
 type Upstream_Balancing int32
 
 const (
@@ -1035,11 +1093,11 @@ func (x Upstream_Balancing) String() string {
 }
 
 func (Upstream_Balancing) Descriptor() protoreflect.EnumDescriptor {
-	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[16].Descriptor()
+	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[17].Descriptor()
 }
 
 func (Upstream_Balancing) Type() protoreflect.EnumType {
-	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[16]
+	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[17]
 }
 
 func (x Upstream_Balancing) Number() protoreflect.EnumNumber {
@@ -1048,7 +1106,7 @@ func (x Upstream_Balancing) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Upstream_Balancing.Descriptor instead.
 func (Upstream_Balancing) EnumDescriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{62, 0}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{64, 0}
 }
 
 type HealthCheck_Kind int32
@@ -1086,11 +1144,11 @@ func (x HealthCheck_Kind) String() string {
 }
 
 func (HealthCheck_Kind) Descriptor() protoreflect.EnumDescriptor {
-	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[17].Descriptor()
+	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[18].Descriptor()
 }
 
 func (HealthCheck_Kind) Type() protoreflect.EnumType {
-	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[17]
+	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[18]
 }
 
 func (x HealthCheck_Kind) Number() protoreflect.EnumNumber {
@@ -1099,7 +1157,7 @@ func (x HealthCheck_Kind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use HealthCheck_Kind.Descriptor instead.
 func (HealthCheck_Kind) EnumDescriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{64, 0}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{66, 0}
 }
 
 type Sticky_Kind int32
@@ -1138,11 +1196,11 @@ func (x Sticky_Kind) String() string {
 }
 
 func (Sticky_Kind) Descriptor() protoreflect.EnumDescriptor {
-	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[18].Descriptor()
+	return file_proxelo_snapshot_v1_snapshot_proto_enumTypes[19].Descriptor()
 }
 
 func (Sticky_Kind) Type() protoreflect.EnumType {
-	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[18]
+	return &file_proxelo_snapshot_v1_snapshot_proto_enumTypes[19]
 }
 
 func (x Sticky_Kind) Number() protoreflect.EnumNumber {
@@ -1151,7 +1209,7 @@ func (x Sticky_Kind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Sticky_Kind.Descriptor instead.
 func (Sticky_Kind) EnumDescriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{66, 0}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{68, 0}
 }
 
 // Snapshot is a fully resolved, immutable configuration for the proxy.
@@ -6577,8 +6635,28 @@ type ProxyAction struct {
 	NextUpstream []NextUpstream `protobuf:"varint,5,rep,packed,name=next_upstream,json=nextUpstream,proto3,enum=proxelo.snapshot.v1.NextUpstream" json:"next_upstream,omitempty"`
 	// proxy_next_upstream_tries. Zero: no limit.
 	NextUpstreamTries uint32 `protobuf:"varint,6,opt,name=next_upstream_tries,json=nextUpstreamTries,proto3" json:"next_upstream_tries,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// Rewrites of the Location header and the URL of Refresh in upstream
+	// responses, the first that matches wins (nginx proxy_redirect). The
+	// control plane includes nginx's default rule. A Location made a path by
+	// a rule becomes absolute with the request host and port. Only for proxy
+	// actions.
+	Redirects []*HeaderRewrite `protobuf:"bytes,7,rep,name=redirects,proto3" json:"redirects,omitempty"`
+	// Rewrites of the Domain attribute of Set-Cookie in upstream responses
+	// (proxy_cookie_domain). Only for proxy actions.
+	CookieDomains []*HeaderRewrite `protobuf:"bytes,8,rep,name=cookie_domains,json=cookieDomains,proto3" json:"cookie_domains,omitempty"`
+	// Rewrites of the Path attribute (proxy_cookie_path). Only for proxy
+	// actions.
+	CookiePaths []*HeaderRewrite `protobuf:"bytes,9,rep,name=cookie_paths,json=cookiePaths,proto3" json:"cookie_paths,omitempty"`
+	// Flags of Set-Cookie, from the first entry naming the cookie
+	// (proxy_cookie_flags). Only for proxy actions.
+	CookieFlags []*CookieFlags `protobuf:"bytes,10,rep,name=cookie_flags,json=cookieFlags,proto3" json:"cookie_flags,omitempty"`
+	// An upstream response of status 300 or more that the route has an error
+	// page for is replaced by that error page (proxy_intercept_errors,
+	// fastcgi_intercept_errors and the like); a 401 keeps its
+	// WWW-Authenticate. Not for memcached actions.
+	InterceptErrors bool `protobuf:"varint,11,opt,name=intercept_errors,json=interceptErrors,proto3" json:"intercept_errors,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ProxyAction) Reset() {
@@ -6653,6 +6731,170 @@ func (x *ProxyAction) GetNextUpstreamTries() uint32 {
 	return 0
 }
 
+func (x *ProxyAction) GetRedirects() []*HeaderRewrite {
+	if x != nil {
+		return x.Redirects
+	}
+	return nil
+}
+
+func (x *ProxyAction) GetCookieDomains() []*HeaderRewrite {
+	if x != nil {
+		return x.CookieDomains
+	}
+	return nil
+}
+
+func (x *ProxyAction) GetCookiePaths() []*HeaderRewrite {
+	if x != nil {
+		return x.CookiePaths
+	}
+	return nil
+}
+
+func (x *ProxyAction) GetCookieFlags() []*CookieFlags {
+	if x != nil {
+		return x.CookieFlags
+	}
+	return nil
+}
+
+func (x *ProxyAction) GetInterceptErrors() bool {
+	if x != nil {
+		return x.InterceptErrors
+	}
+	return false
+}
+
+// HeaderRewrite replaces a header value that matches pattern; a Set-Cookie
+// whose attributes all decline keeps its exact bytes.
+type HeaderRewrite struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Kind    HeaderRewrite_Kind     `protobuf:"varint,1,opt,name=kind,proto3,enum=proxelo.snapshot.v1.HeaderRewrite_Kind" json:"kind,omitempty"`
+	Pattern string                 `protobuf:"bytes,2,opt,name=pattern,proto3" json:"pattern,omitempty"`
+	// Template.
+	Replacement   string `protobuf:"bytes,3,opt,name=replacement,proto3" json:"replacement,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HeaderRewrite) Reset() {
+	*x = HeaderRewrite{}
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[62]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HeaderRewrite) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HeaderRewrite) ProtoMessage() {}
+
+func (x *HeaderRewrite) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[62]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HeaderRewrite.ProtoReflect.Descriptor instead.
+func (*HeaderRewrite) Descriptor() ([]byte, []int) {
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *HeaderRewrite) GetKind() HeaderRewrite_Kind {
+	if x != nil {
+		return x.Kind
+	}
+	return HeaderRewrite_KIND_UNSPECIFIED
+}
+
+func (x *HeaderRewrite) GetPattern() string {
+	if x != nil {
+		return x.Pattern
+	}
+	return ""
+}
+
+func (x *HeaderRewrite) GetReplacement() string {
+	if x != nil {
+		return x.Replacement
+	}
+	return ""
+}
+
+// CookieFlags sets or removes Secure, HttpOnly and SameSite.
+type CookieFlags struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Cookie name: a template compared ignoring case, or with regex a PCRE2
+	// ignoring case.
+	Cookie string `protobuf:"bytes,1,opt,name=cookie,proto3" json:"cookie,omitempty"`
+	Regex  bool   `protobuf:"varint,2,opt,name=regex,proto3" json:"regex,omitempty"`
+	// Templates expanding to secure, nosecure, httponly, nohttponly,
+	// samesite=strict, samesite=lax, samesite=none or nosamesite; empty and
+	// other values are ignored.
+	Flags         []string `protobuf:"bytes,3,rep,name=flags,proto3" json:"flags,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CookieFlags) Reset() {
+	*x = CookieFlags{}
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[63]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CookieFlags) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CookieFlags) ProtoMessage() {}
+
+func (x *CookieFlags) ProtoReflect() protoreflect.Message {
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[63]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CookieFlags.ProtoReflect.Descriptor instead.
+func (*CookieFlags) Descriptor() ([]byte, []int) {
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{63}
+}
+
+func (x *CookieFlags) GetCookie() string {
+	if x != nil {
+		return x.Cookie
+	}
+	return ""
+}
+
+func (x *CookieFlags) GetRegex() bool {
+	if x != nil {
+		return x.Regex
+	}
+	return false
+}
+
+func (x *CookieFlags) GetFlags() []string {
+	if x != nil {
+		return x.Flags
+	}
+	return nil
+}
+
 type Upstream struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Targets       []*Target              `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
@@ -6699,7 +6941,7 @@ type Upstream struct {
 
 func (x *Upstream) Reset() {
 	*x = Upstream{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[62]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6711,7 +6953,7 @@ func (x *Upstream) String() string {
 func (*Upstream) ProtoMessage() {}
 
 func (x *Upstream) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[62]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6724,7 +6966,7 @@ func (x *Upstream) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Upstream.ProtoReflect.Descriptor instead.
 func (*Upstream) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{62}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *Upstream) GetTargets() []*Target {
@@ -6878,7 +7120,7 @@ type UpstreamTls struct {
 
 func (x *UpstreamTls) Reset() {
 	*x = UpstreamTls{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[63]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6890,7 +7132,7 @@ func (x *UpstreamTls) String() string {
 func (*UpstreamTls) ProtoMessage() {}
 
 func (x *UpstreamTls) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[63]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6903,7 +7145,7 @@ func (x *UpstreamTls) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpstreamTls.ProtoReflect.Descriptor instead.
 func (*UpstreamTls) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{63}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *UpstreamTls) GetServerName() string {
@@ -7006,7 +7248,7 @@ type HealthCheck struct {
 
 func (x *HealthCheck) Reset() {
 	*x = HealthCheck{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[64]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7018,7 +7260,7 @@ func (x *HealthCheck) String() string {
 func (*HealthCheck) ProtoMessage() {}
 
 func (x *HealthCheck) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[64]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7031,7 +7273,7 @@ func (x *HealthCheck) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheck.ProtoReflect.Descriptor instead.
 func (*HealthCheck) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{64}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *HealthCheck) GetKind() HealthCheck_Kind {
@@ -7114,7 +7356,7 @@ type StatusRange struct {
 
 func (x *StatusRange) Reset() {
 	*x = StatusRange{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[65]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7126,7 +7368,7 @@ func (x *StatusRange) String() string {
 func (*StatusRange) ProtoMessage() {}
 
 func (x *StatusRange) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[65]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7139,7 +7381,7 @@ func (x *StatusRange) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StatusRange.ProtoReflect.Descriptor instead.
 func (*StatusRange) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{65}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *StatusRange) GetFrom() uint32 {
@@ -7180,7 +7422,7 @@ type Sticky struct {
 
 func (x *Sticky) Reset() {
 	*x = Sticky{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[66]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7192,7 +7434,7 @@ func (x *Sticky) String() string {
 func (*Sticky) ProtoMessage() {}
 
 func (x *Sticky) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[66]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7205,7 +7447,7 @@ func (x *Sticky) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Sticky.ProtoReflect.Descriptor instead.
 func (*Sticky) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{66}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *Sticky) GetKind() Sticky_Kind {
@@ -7298,7 +7540,7 @@ type Target struct {
 
 func (x *Target) Reset() {
 	*x = Target{}
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[67]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7310,7 +7552,7 @@ func (x *Target) String() string {
 func (*Target) ProtoMessage() {}
 
 func (x *Target) ProtoReflect() protoreflect.Message {
-	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[67]
+	mi := &file_proxelo_snapshot_v1_snapshot_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7323,7 +7565,7 @@ func (x *Target) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Target.ProtoReflect.Descriptor instead.
 func (*Target) Descriptor() ([]byte, []int) {
-	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{67}
+	return file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *Target) GetAddress() string {
@@ -7947,14 +8189,34 @@ const file_proxelo_snapshot_v1_snapshot_proto_rawDesc = "" +
 	"\x04move\x18\x05 \x01(\bR\x04move\x12/\n" +
 	"\x14create_full_put_path\x18\x06 \x01(\bR\x11createFullPutPath\x12(\n" +
 	"\x10min_delete_depth\x18\a \x01(\rR\x0eminDeleteDepth\x12\x16\n" +
-	"\x06access\x18\b \x01(\rR\x06access\"\x9f\x02\n" +
+	"\x06access\x18\b \x01(\rR\x06access\"\xe3\x04\n" +
 	"\vProxyAction\x12\x1a\n" +
 	"\bupstream\x18\x01 \x01(\rR\bupstream\x12,\n" +
 	"\x12connect_timeout_ms\x18\x02 \x01(\rR\x10connectTimeoutMs\x12&\n" +
 	"\x0fsend_timeout_ms\x18\x03 \x01(\rR\rsendTimeoutMs\x12&\n" +
 	"\x0fread_timeout_ms\x18\x04 \x01(\rR\rreadTimeoutMs\x12F\n" +
 	"\rnext_upstream\x18\x05 \x03(\x0e2!.proxelo.snapshot.v1.NextUpstreamR\fnextUpstream\x12.\n" +
-	"\x13next_upstream_tries\x18\x06 \x01(\rR\x11nextUpstreamTries\"\xaf\a\n" +
+	"\x13next_upstream_tries\x18\x06 \x01(\rR\x11nextUpstreamTries\x12@\n" +
+	"\tredirects\x18\a \x03(\v2\".proxelo.snapshot.v1.HeaderRewriteR\tredirects\x12I\n" +
+	"\x0ecookie_domains\x18\b \x03(\v2\".proxelo.snapshot.v1.HeaderRewriteR\rcookieDomains\x12E\n" +
+	"\fcookie_paths\x18\t \x03(\v2\".proxelo.snapshot.v1.HeaderRewriteR\vcookiePaths\x12C\n" +
+	"\fcookie_flags\x18\n" +
+	" \x03(\v2 .proxelo.snapshot.v1.CookieFlagsR\vcookieFlags\x12)\n" +
+	"\x10intercept_errors\x18\v \x01(\bR\x0finterceptErrors\"\xe0\x01\n" +
+	"\rHeaderRewrite\x12;\n" +
+	"\x04kind\x18\x01 \x01(\x0e2'.proxelo.snapshot.v1.HeaderRewrite.KindR\x04kind\x12\x18\n" +
+	"\apattern\x18\x02 \x01(\tR\apattern\x12 \n" +
+	"\vreplacement\x18\x03 \x01(\tR\vreplacement\"V\n" +
+	"\x04Kind\x12\x14\n" +
+	"\x10KIND_UNSPECIFIED\x10\x00\x12\x0e\n" +
+	"\n" +
+	"KIND_REGEX\x10\x01\x12\x17\n" +
+	"\x13KIND_REGEX_CASELESS\x10\x02\x12\x0f\n" +
+	"\vKIND_DOMAIN\x10\x03\"Q\n" +
+	"\vCookieFlags\x12\x16\n" +
+	"\x06cookie\x18\x01 \x01(\tR\x06cookie\x12\x14\n" +
+	"\x05regex\x18\x02 \x01(\bR\x05regex\x12\x14\n" +
+	"\x05flags\x18\x03 \x03(\tR\x05flags\"\xaf\a\n" +
 	"\bUpstream\x125\n" +
 	"\atargets\x18\x01 \x03(\v2\x1b.proxelo.snapshot.v1.TargetR\atargets\x12E\n" +
 	"\tbalancing\x18\x02 \x01(\x0e2'.proxelo.snapshot.v1.Upstream.BalancingR\tbalancing\x12%\n" +
@@ -8075,8 +8337,8 @@ func file_proxelo_snapshot_v1_snapshot_proto_rawDescGZIP() []byte {
 	return file_proxelo_snapshot_v1_snapshot_proto_rawDescData
 }
 
-var file_proxelo_snapshot_v1_snapshot_proto_enumTypes = make([]protoimpl.EnumInfo, 19)
-var file_proxelo_snapshot_v1_snapshot_proto_msgTypes = make([]protoimpl.MessageInfo, 68)
+var file_proxelo_snapshot_v1_snapshot_proto_enumTypes = make([]protoimpl.EnumInfo, 20)
+var file_proxelo_snapshot_v1_snapshot_proto_msgTypes = make([]protoimpl.MessageInfo, 70)
 var file_proxelo_snapshot_v1_snapshot_proto_goTypes = []any{
 	(NextUpstream)(0),           // 0: proxelo.snapshot.v1.NextUpstream
 	(Cache_UseStale)(0),         // 1: proxelo.snapshot.v1.Cache.UseStale
@@ -8094,191 +8356,199 @@ var file_proxelo_snapshot_v1_snapshot_proto_goTypes = []any{
 	(PathMatch_Kind)(0),         // 13: proxelo.snapshot.v1.PathMatch.Kind
 	(GatewayAction_Protocol)(0), // 14: proxelo.snapshot.v1.GatewayAction.Protocol
 	(Autoindex_Format)(0),       // 15: proxelo.snapshot.v1.Autoindex.Format
-	(Upstream_Balancing)(0),     // 16: proxelo.snapshot.v1.Upstream.Balancing
-	(HealthCheck_Kind)(0),       // 17: proxelo.snapshot.v1.HealthCheck.Kind
-	(Sticky_Kind)(0),            // 18: proxelo.snapshot.v1.Sticky.Kind
-	(*Snapshot)(nil),            // 19: proxelo.snapshot.v1.Snapshot
-	(*WasmModule)(nil),          // 20: proxelo.snapshot.v1.WasmModule
-	(*WasmFilter)(nil),          // 21: proxelo.snapshot.v1.WasmFilter
-	(*CacheZone)(nil),           // 22: proxelo.snapshot.v1.CacheZone
-	(*Cache)(nil),               // 23: proxelo.snapshot.v1.Cache
-	(*CacheValid)(nil),          // 24: proxelo.snapshot.v1.CacheValid
-	(*Stream)(nil),              // 25: proxelo.snapshot.v1.Stream
-	(*StreamRoute)(nil),         // 26: proxelo.snapshot.v1.StreamRoute
-	(*Lookup)(nil),              // 27: proxelo.snapshot.v1.Lookup
-	(*LookupMap)(nil),           // 28: proxelo.snapshot.v1.LookupMap
-	(*LookupMapEntry)(nil),      // 29: proxelo.snapshot.v1.LookupMapEntry
-	(*LookupGeo)(nil),           // 30: proxelo.snapshot.v1.LookupGeo
-	(*LookupGeoEntry)(nil),      // 31: proxelo.snapshot.v1.LookupGeoEntry
-	(*LookupSplit)(nil),         // 32: proxelo.snapshot.v1.LookupSplit
-	(*LookupSplitPart)(nil),     // 33: proxelo.snapshot.v1.LookupSplitPart
-	(*RateZone)(nil),            // 34: proxelo.snapshot.v1.RateZone
-	(*ConnZone)(nil),            // 35: proxelo.snapshot.v1.ConnZone
-	(*Certificate)(nil),         // 36: proxelo.snapshot.v1.Certificate
-	(*AccessLog)(nil),           // 37: proxelo.snapshot.v1.AccessLog
-	(*HeaderOps)(nil),           // 38: proxelo.snapshot.v1.HeaderOps
-	(*HeaderValue)(nil),         // 39: proxelo.snapshot.v1.HeaderValue
-	(*Listener)(nil),            // 40: proxelo.snapshot.v1.Listener
-	(*ListenerTls)(nil),         // 41: proxelo.snapshot.v1.ListenerTls
-	(*ClientAuth)(nil),          // 42: proxelo.snapshot.v1.ClientAuth
-	(*Site)(nil),                // 43: proxelo.snapshot.v1.Site
-	(*Rewrite)(nil),             // 44: proxelo.snapshot.v1.Rewrite
-	(*ErrorPage)(nil),           // 45: proxelo.snapshot.v1.ErrorPage
-	(*HostMatch)(nil),           // 46: proxelo.snapshot.v1.HostMatch
-	(*Route)(nil),               // 47: proxelo.snapshot.v1.Route
-	(*Filters)(nil),             // 48: proxelo.snapshot.v1.Filters
-	(*SubFilter)(nil),           // 49: proxelo.snapshot.v1.SubFilter
-	(*SubPair)(nil),             // 50: proxelo.snapshot.v1.SubPair
-	(*Ssi)(nil),                 // 51: proxelo.snapshot.v1.Ssi
-	(*Addition)(nil),            // 52: proxelo.snapshot.v1.Addition
-	(*Charset)(nil),             // 53: proxelo.snapshot.v1.Charset
-	(*CharsetCodes)(nil),        // 54: proxelo.snapshot.v1.CharsetCodes
-	(*Userid)(nil),              // 55: proxelo.snapshot.v1.Userid
-	(*Mirror)(nil),              // 56: proxelo.snapshot.v1.Mirror
-	(*Access)(nil),              // 57: proxelo.snapshot.v1.Access
-	(*RealIp)(nil),              // 58: proxelo.snapshot.v1.RealIp
-	(*AccessRule)(nil),          // 59: proxelo.snapshot.v1.AccessRule
-	(*BasicAuth)(nil),           // 60: proxelo.snapshot.v1.BasicAuth
-	(*BasicUser)(nil),           // 61: proxelo.snapshot.v1.BasicUser
-	(*ForwardAuth)(nil),         // 62: proxelo.snapshot.v1.ForwardAuth
-	(*Jwt)(nil),                 // 63: proxelo.snapshot.v1.Jwt
-	(*Oidc)(nil),                // 64: proxelo.snapshot.v1.Oidc
-	(*Compression)(nil),         // 65: proxelo.snapshot.v1.Compression
-	(*Bandwidth)(nil),           // 66: proxelo.snapshot.v1.Bandwidth
-	(*ValueMatch)(nil),          // 67: proxelo.snapshot.v1.ValueMatch
-	(*PathMatch)(nil),           // 68: proxelo.snapshot.v1.PathMatch
-	(*Action)(nil),              // 69: proxelo.snapshot.v1.Action
-	(*GatewayAction)(nil),       // 70: proxelo.snapshot.v1.GatewayAction
-	(*GatewayParam)(nil),        // 71: proxelo.snapshot.v1.GatewayParam
-	(*MemcachedAction)(nil),     // 72: proxelo.snapshot.v1.MemcachedAction
-	(*GrpcAction)(nil),          // 73: proxelo.snapshot.v1.GrpcAction
-	(*ReturnAction)(nil),        // 74: proxelo.snapshot.v1.ReturnAction
-	(*TryFiles)(nil),            // 75: proxelo.snapshot.v1.TryFiles
-	(*StaticAction)(nil),        // 76: proxelo.snapshot.v1.StaticAction
-	(*Mp4)(nil),                 // 77: proxelo.snapshot.v1.Mp4
-	(*Autoindex)(nil),           // 78: proxelo.snapshot.v1.Autoindex
-	(*Dav)(nil),                 // 79: proxelo.snapshot.v1.Dav
-	(*ProxyAction)(nil),         // 80: proxelo.snapshot.v1.ProxyAction
-	(*Upstream)(nil),            // 81: proxelo.snapshot.v1.Upstream
-	(*UpstreamTls)(nil),         // 82: proxelo.snapshot.v1.UpstreamTls
-	(*HealthCheck)(nil),         // 83: proxelo.snapshot.v1.HealthCheck
-	(*StatusRange)(nil),         // 84: proxelo.snapshot.v1.StatusRange
-	(*Sticky)(nil),              // 85: proxelo.snapshot.v1.Sticky
-	(*Target)(nil),              // 86: proxelo.snapshot.v1.Target
+	(HeaderRewrite_Kind)(0),     // 16: proxelo.snapshot.v1.HeaderRewrite.Kind
+	(Upstream_Balancing)(0),     // 17: proxelo.snapshot.v1.Upstream.Balancing
+	(HealthCheck_Kind)(0),       // 18: proxelo.snapshot.v1.HealthCheck.Kind
+	(Sticky_Kind)(0),            // 19: proxelo.snapshot.v1.Sticky.Kind
+	(*Snapshot)(nil),            // 20: proxelo.snapshot.v1.Snapshot
+	(*WasmModule)(nil),          // 21: proxelo.snapshot.v1.WasmModule
+	(*WasmFilter)(nil),          // 22: proxelo.snapshot.v1.WasmFilter
+	(*CacheZone)(nil),           // 23: proxelo.snapshot.v1.CacheZone
+	(*Cache)(nil),               // 24: proxelo.snapshot.v1.Cache
+	(*CacheValid)(nil),          // 25: proxelo.snapshot.v1.CacheValid
+	(*Stream)(nil),              // 26: proxelo.snapshot.v1.Stream
+	(*StreamRoute)(nil),         // 27: proxelo.snapshot.v1.StreamRoute
+	(*Lookup)(nil),              // 28: proxelo.snapshot.v1.Lookup
+	(*LookupMap)(nil),           // 29: proxelo.snapshot.v1.LookupMap
+	(*LookupMapEntry)(nil),      // 30: proxelo.snapshot.v1.LookupMapEntry
+	(*LookupGeo)(nil),           // 31: proxelo.snapshot.v1.LookupGeo
+	(*LookupGeoEntry)(nil),      // 32: proxelo.snapshot.v1.LookupGeoEntry
+	(*LookupSplit)(nil),         // 33: proxelo.snapshot.v1.LookupSplit
+	(*LookupSplitPart)(nil),     // 34: proxelo.snapshot.v1.LookupSplitPart
+	(*RateZone)(nil),            // 35: proxelo.snapshot.v1.RateZone
+	(*ConnZone)(nil),            // 36: proxelo.snapshot.v1.ConnZone
+	(*Certificate)(nil),         // 37: proxelo.snapshot.v1.Certificate
+	(*AccessLog)(nil),           // 38: proxelo.snapshot.v1.AccessLog
+	(*HeaderOps)(nil),           // 39: proxelo.snapshot.v1.HeaderOps
+	(*HeaderValue)(nil),         // 40: proxelo.snapshot.v1.HeaderValue
+	(*Listener)(nil),            // 41: proxelo.snapshot.v1.Listener
+	(*ListenerTls)(nil),         // 42: proxelo.snapshot.v1.ListenerTls
+	(*ClientAuth)(nil),          // 43: proxelo.snapshot.v1.ClientAuth
+	(*Site)(nil),                // 44: proxelo.snapshot.v1.Site
+	(*Rewrite)(nil),             // 45: proxelo.snapshot.v1.Rewrite
+	(*ErrorPage)(nil),           // 46: proxelo.snapshot.v1.ErrorPage
+	(*HostMatch)(nil),           // 47: proxelo.snapshot.v1.HostMatch
+	(*Route)(nil),               // 48: proxelo.snapshot.v1.Route
+	(*Filters)(nil),             // 49: proxelo.snapshot.v1.Filters
+	(*SubFilter)(nil),           // 50: proxelo.snapshot.v1.SubFilter
+	(*SubPair)(nil),             // 51: proxelo.snapshot.v1.SubPair
+	(*Ssi)(nil),                 // 52: proxelo.snapshot.v1.Ssi
+	(*Addition)(nil),            // 53: proxelo.snapshot.v1.Addition
+	(*Charset)(nil),             // 54: proxelo.snapshot.v1.Charset
+	(*CharsetCodes)(nil),        // 55: proxelo.snapshot.v1.CharsetCodes
+	(*Userid)(nil),              // 56: proxelo.snapshot.v1.Userid
+	(*Mirror)(nil),              // 57: proxelo.snapshot.v1.Mirror
+	(*Access)(nil),              // 58: proxelo.snapshot.v1.Access
+	(*RealIp)(nil),              // 59: proxelo.snapshot.v1.RealIp
+	(*AccessRule)(nil),          // 60: proxelo.snapshot.v1.AccessRule
+	(*BasicAuth)(nil),           // 61: proxelo.snapshot.v1.BasicAuth
+	(*BasicUser)(nil),           // 62: proxelo.snapshot.v1.BasicUser
+	(*ForwardAuth)(nil),         // 63: proxelo.snapshot.v1.ForwardAuth
+	(*Jwt)(nil),                 // 64: proxelo.snapshot.v1.Jwt
+	(*Oidc)(nil),                // 65: proxelo.snapshot.v1.Oidc
+	(*Compression)(nil),         // 66: proxelo.snapshot.v1.Compression
+	(*Bandwidth)(nil),           // 67: proxelo.snapshot.v1.Bandwidth
+	(*ValueMatch)(nil),          // 68: proxelo.snapshot.v1.ValueMatch
+	(*PathMatch)(nil),           // 69: proxelo.snapshot.v1.PathMatch
+	(*Action)(nil),              // 70: proxelo.snapshot.v1.Action
+	(*GatewayAction)(nil),       // 71: proxelo.snapshot.v1.GatewayAction
+	(*GatewayParam)(nil),        // 72: proxelo.snapshot.v1.GatewayParam
+	(*MemcachedAction)(nil),     // 73: proxelo.snapshot.v1.MemcachedAction
+	(*GrpcAction)(nil),          // 74: proxelo.snapshot.v1.GrpcAction
+	(*ReturnAction)(nil),        // 75: proxelo.snapshot.v1.ReturnAction
+	(*TryFiles)(nil),            // 76: proxelo.snapshot.v1.TryFiles
+	(*StaticAction)(nil),        // 77: proxelo.snapshot.v1.StaticAction
+	(*Mp4)(nil),                 // 78: proxelo.snapshot.v1.Mp4
+	(*Autoindex)(nil),           // 79: proxelo.snapshot.v1.Autoindex
+	(*Dav)(nil),                 // 80: proxelo.snapshot.v1.Dav
+	(*ProxyAction)(nil),         // 81: proxelo.snapshot.v1.ProxyAction
+	(*HeaderRewrite)(nil),       // 82: proxelo.snapshot.v1.HeaderRewrite
+	(*CookieFlags)(nil),         // 83: proxelo.snapshot.v1.CookieFlags
+	(*Upstream)(nil),            // 84: proxelo.snapshot.v1.Upstream
+	(*UpstreamTls)(nil),         // 85: proxelo.snapshot.v1.UpstreamTls
+	(*HealthCheck)(nil),         // 86: proxelo.snapshot.v1.HealthCheck
+	(*StatusRange)(nil),         // 87: proxelo.snapshot.v1.StatusRange
+	(*Sticky)(nil),              // 88: proxelo.snapshot.v1.Sticky
+	(*Target)(nil),              // 89: proxelo.snapshot.v1.Target
 }
 var file_proxelo_snapshot_v1_snapshot_proto_depIdxs = []int32{
-	40,  // 0: proxelo.snapshot.v1.Snapshot.listeners:type_name -> proxelo.snapshot.v1.Listener
-	43,  // 1: proxelo.snapshot.v1.Snapshot.sites:type_name -> proxelo.snapshot.v1.Site
-	81,  // 2: proxelo.snapshot.v1.Snapshot.upstreams:type_name -> proxelo.snapshot.v1.Upstream
-	36,  // 3: proxelo.snapshot.v1.Snapshot.certificates:type_name -> proxelo.snapshot.v1.Certificate
-	37,  // 4: proxelo.snapshot.v1.Snapshot.access_logs:type_name -> proxelo.snapshot.v1.AccessLog
-	34,  // 5: proxelo.snapshot.v1.Snapshot.rate_zones:type_name -> proxelo.snapshot.v1.RateZone
-	35,  // 6: proxelo.snapshot.v1.Snapshot.conn_zones:type_name -> proxelo.snapshot.v1.ConnZone
-	27,  // 7: proxelo.snapshot.v1.Snapshot.lookups:type_name -> proxelo.snapshot.v1.Lookup
-	25,  // 8: proxelo.snapshot.v1.Snapshot.streams:type_name -> proxelo.snapshot.v1.Stream
-	22,  // 9: proxelo.snapshot.v1.Snapshot.cache_zones:type_name -> proxelo.snapshot.v1.CacheZone
-	20,  // 10: proxelo.snapshot.v1.Snapshot.wasm_modules:type_name -> proxelo.snapshot.v1.WasmModule
-	24,  // 11: proxelo.snapshot.v1.Cache.valid:type_name -> proxelo.snapshot.v1.CacheValid
+	41,  // 0: proxelo.snapshot.v1.Snapshot.listeners:type_name -> proxelo.snapshot.v1.Listener
+	44,  // 1: proxelo.snapshot.v1.Snapshot.sites:type_name -> proxelo.snapshot.v1.Site
+	84,  // 2: proxelo.snapshot.v1.Snapshot.upstreams:type_name -> proxelo.snapshot.v1.Upstream
+	37,  // 3: proxelo.snapshot.v1.Snapshot.certificates:type_name -> proxelo.snapshot.v1.Certificate
+	38,  // 4: proxelo.snapshot.v1.Snapshot.access_logs:type_name -> proxelo.snapshot.v1.AccessLog
+	35,  // 5: proxelo.snapshot.v1.Snapshot.rate_zones:type_name -> proxelo.snapshot.v1.RateZone
+	36,  // 6: proxelo.snapshot.v1.Snapshot.conn_zones:type_name -> proxelo.snapshot.v1.ConnZone
+	28,  // 7: proxelo.snapshot.v1.Snapshot.lookups:type_name -> proxelo.snapshot.v1.Lookup
+	26,  // 8: proxelo.snapshot.v1.Snapshot.streams:type_name -> proxelo.snapshot.v1.Stream
+	23,  // 9: proxelo.snapshot.v1.Snapshot.cache_zones:type_name -> proxelo.snapshot.v1.CacheZone
+	21,  // 10: proxelo.snapshot.v1.Snapshot.wasm_modules:type_name -> proxelo.snapshot.v1.WasmModule
+	25,  // 11: proxelo.snapshot.v1.Cache.valid:type_name -> proxelo.snapshot.v1.CacheValid
 	1,   // 12: proxelo.snapshot.v1.Cache.use_stale:type_name -> proxelo.snapshot.v1.Cache.UseStale
 	2,   // 13: proxelo.snapshot.v1.Cache.ignore:type_name -> proxelo.snapshot.v1.Cache.Ignore
-	41,  // 14: proxelo.snapshot.v1.Stream.tls:type_name -> proxelo.snapshot.v1.ListenerTls
-	26,  // 15: proxelo.snapshot.v1.Stream.routes:type_name -> proxelo.snapshot.v1.StreamRoute
-	59,  // 16: proxelo.snapshot.v1.Stream.rules:type_name -> proxelo.snapshot.v1.AccessRule
-	46,  // 17: proxelo.snapshot.v1.StreamRoute.server_names:type_name -> proxelo.snapshot.v1.HostMatch
-	28,  // 18: proxelo.snapshot.v1.Lookup.map:type_name -> proxelo.snapshot.v1.LookupMap
-	30,  // 19: proxelo.snapshot.v1.Lookup.geo:type_name -> proxelo.snapshot.v1.LookupGeo
-	32,  // 20: proxelo.snapshot.v1.Lookup.split:type_name -> proxelo.snapshot.v1.LookupSplit
-	29,  // 21: proxelo.snapshot.v1.LookupMap.entries:type_name -> proxelo.snapshot.v1.LookupMapEntry
+	42,  // 14: proxelo.snapshot.v1.Stream.tls:type_name -> proxelo.snapshot.v1.ListenerTls
+	27,  // 15: proxelo.snapshot.v1.Stream.routes:type_name -> proxelo.snapshot.v1.StreamRoute
+	60,  // 16: proxelo.snapshot.v1.Stream.rules:type_name -> proxelo.snapshot.v1.AccessRule
+	47,  // 17: proxelo.snapshot.v1.StreamRoute.server_names:type_name -> proxelo.snapshot.v1.HostMatch
+	29,  // 18: proxelo.snapshot.v1.Lookup.map:type_name -> proxelo.snapshot.v1.LookupMap
+	31,  // 19: proxelo.snapshot.v1.Lookup.geo:type_name -> proxelo.snapshot.v1.LookupGeo
+	33,  // 20: proxelo.snapshot.v1.Lookup.split:type_name -> proxelo.snapshot.v1.LookupSplit
+	30,  // 21: proxelo.snapshot.v1.LookupMap.entries:type_name -> proxelo.snapshot.v1.LookupMapEntry
 	3,   // 22: proxelo.snapshot.v1.LookupMapEntry.kind:type_name -> proxelo.snapshot.v1.LookupMapEntry.Kind
-	31,  // 23: proxelo.snapshot.v1.LookupGeo.entries:type_name -> proxelo.snapshot.v1.LookupGeoEntry
-	33,  // 24: proxelo.snapshot.v1.LookupSplit.parts:type_name -> proxelo.snapshot.v1.LookupSplitPart
-	39,  // 25: proxelo.snapshot.v1.HeaderOps.set:type_name -> proxelo.snapshot.v1.HeaderValue
-	39,  // 26: proxelo.snapshot.v1.HeaderOps.add:type_name -> proxelo.snapshot.v1.HeaderValue
-	41,  // 27: proxelo.snapshot.v1.Listener.tls:type_name -> proxelo.snapshot.v1.ListenerTls
+	32,  // 23: proxelo.snapshot.v1.LookupGeo.entries:type_name -> proxelo.snapshot.v1.LookupGeoEntry
+	34,  // 24: proxelo.snapshot.v1.LookupSplit.parts:type_name -> proxelo.snapshot.v1.LookupSplitPart
+	40,  // 25: proxelo.snapshot.v1.HeaderOps.set:type_name -> proxelo.snapshot.v1.HeaderValue
+	40,  // 26: proxelo.snapshot.v1.HeaderOps.add:type_name -> proxelo.snapshot.v1.HeaderValue
+	42,  // 27: proxelo.snapshot.v1.Listener.tls:type_name -> proxelo.snapshot.v1.ListenerTls
 	4,   // 28: proxelo.snapshot.v1.ListenerTls.min_version:type_name -> proxelo.snapshot.v1.ListenerTls.Version
 	4,   // 29: proxelo.snapshot.v1.ListenerTls.max_version:type_name -> proxelo.snapshot.v1.ListenerTls.Version
-	42,  // 30: proxelo.snapshot.v1.ListenerTls.client_auth:type_name -> proxelo.snapshot.v1.ClientAuth
+	43,  // 30: proxelo.snapshot.v1.ListenerTls.client_auth:type_name -> proxelo.snapshot.v1.ClientAuth
 	5,   // 31: proxelo.snapshot.v1.ClientAuth.mode:type_name -> proxelo.snapshot.v1.ClientAuth.Mode
-	46,  // 32: proxelo.snapshot.v1.Site.hostnames:type_name -> proxelo.snapshot.v1.HostMatch
-	47,  // 33: proxelo.snapshot.v1.Site.routes:type_name -> proxelo.snapshot.v1.Route
-	44,  // 34: proxelo.snapshot.v1.Site.rewrites:type_name -> proxelo.snapshot.v1.Rewrite
-	45,  // 35: proxelo.snapshot.v1.Site.error_pages:type_name -> proxelo.snapshot.v1.ErrorPage
-	74,  // 36: proxelo.snapshot.v1.Site.return:type_name -> proxelo.snapshot.v1.ReturnAction
-	47,  // 37: proxelo.snapshot.v1.Site.named_routes:type_name -> proxelo.snapshot.v1.Route
-	38,  // 38: proxelo.snapshot.v1.Site.response_headers:type_name -> proxelo.snapshot.v1.HeaderOps
-	58,  // 39: proxelo.snapshot.v1.Site.real_ip:type_name -> proxelo.snapshot.v1.RealIp
-	65,  // 40: proxelo.snapshot.v1.Site.compression:type_name -> proxelo.snapshot.v1.Compression
-	48,  // 41: proxelo.snapshot.v1.Site.filters:type_name -> proxelo.snapshot.v1.Filters
+	47,  // 32: proxelo.snapshot.v1.Site.hostnames:type_name -> proxelo.snapshot.v1.HostMatch
+	48,  // 33: proxelo.snapshot.v1.Site.routes:type_name -> proxelo.snapshot.v1.Route
+	45,  // 34: proxelo.snapshot.v1.Site.rewrites:type_name -> proxelo.snapshot.v1.Rewrite
+	46,  // 35: proxelo.snapshot.v1.Site.error_pages:type_name -> proxelo.snapshot.v1.ErrorPage
+	75,  // 36: proxelo.snapshot.v1.Site.return:type_name -> proxelo.snapshot.v1.ReturnAction
+	48,  // 37: proxelo.snapshot.v1.Site.named_routes:type_name -> proxelo.snapshot.v1.Route
+	39,  // 38: proxelo.snapshot.v1.Site.response_headers:type_name -> proxelo.snapshot.v1.HeaderOps
+	59,  // 39: proxelo.snapshot.v1.Site.real_ip:type_name -> proxelo.snapshot.v1.RealIp
+	66,  // 40: proxelo.snapshot.v1.Site.compression:type_name -> proxelo.snapshot.v1.Compression
+	49,  // 41: proxelo.snapshot.v1.Site.filters:type_name -> proxelo.snapshot.v1.Filters
 	6,   // 42: proxelo.snapshot.v1.Rewrite.flag:type_name -> proxelo.snapshot.v1.Rewrite.Flag
 	7,   // 43: proxelo.snapshot.v1.HostMatch.kind:type_name -> proxelo.snapshot.v1.HostMatch.Kind
-	68,  // 44: proxelo.snapshot.v1.Route.path:type_name -> proxelo.snapshot.v1.PathMatch
-	69,  // 45: proxelo.snapshot.v1.Route.action:type_name -> proxelo.snapshot.v1.Action
-	44,  // 46: proxelo.snapshot.v1.Route.rewrites:type_name -> proxelo.snapshot.v1.Rewrite
-	47,  // 47: proxelo.snapshot.v1.Route.children:type_name -> proxelo.snapshot.v1.Route
-	45,  // 48: proxelo.snapshot.v1.Route.error_pages:type_name -> proxelo.snapshot.v1.ErrorPage
-	67,  // 49: proxelo.snapshot.v1.Route.headers:type_name -> proxelo.snapshot.v1.ValueMatch
-	67,  // 50: proxelo.snapshot.v1.Route.query:type_name -> proxelo.snapshot.v1.ValueMatch
-	38,  // 51: proxelo.snapshot.v1.Route.response_headers:type_name -> proxelo.snapshot.v1.HeaderOps
-	38,  // 52: proxelo.snapshot.v1.Route.request_headers:type_name -> proxelo.snapshot.v1.HeaderOps
-	57,  // 53: proxelo.snapshot.v1.Route.access:type_name -> proxelo.snapshot.v1.Access
-	66,  // 54: proxelo.snapshot.v1.Route.bandwidth:type_name -> proxelo.snapshot.v1.Bandwidth
-	65,  // 55: proxelo.snapshot.v1.Route.compression:type_name -> proxelo.snapshot.v1.Compression
-	23,  // 56: proxelo.snapshot.v1.Route.cache:type_name -> proxelo.snapshot.v1.Cache
-	48,  // 57: proxelo.snapshot.v1.Route.filters:type_name -> proxelo.snapshot.v1.Filters
-	56,  // 58: proxelo.snapshot.v1.Route.mirror:type_name -> proxelo.snapshot.v1.Mirror
-	49,  // 59: proxelo.snapshot.v1.Filters.sub:type_name -> proxelo.snapshot.v1.SubFilter
-	51,  // 60: proxelo.snapshot.v1.Filters.ssi:type_name -> proxelo.snapshot.v1.Ssi
-	52,  // 61: proxelo.snapshot.v1.Filters.addition:type_name -> proxelo.snapshot.v1.Addition
-	53,  // 62: proxelo.snapshot.v1.Filters.charset:type_name -> proxelo.snapshot.v1.Charset
-	55,  // 63: proxelo.snapshot.v1.Filters.userid:type_name -> proxelo.snapshot.v1.Userid
-	50,  // 64: proxelo.snapshot.v1.SubFilter.pairs:type_name -> proxelo.snapshot.v1.SubPair
-	54,  // 65: proxelo.snapshot.v1.Charset.to_utf8:type_name -> proxelo.snapshot.v1.CharsetCodes
-	54,  // 66: proxelo.snapshot.v1.Charset.from_utf8:type_name -> proxelo.snapshot.v1.CharsetCodes
+	69,  // 44: proxelo.snapshot.v1.Route.path:type_name -> proxelo.snapshot.v1.PathMatch
+	70,  // 45: proxelo.snapshot.v1.Route.action:type_name -> proxelo.snapshot.v1.Action
+	45,  // 46: proxelo.snapshot.v1.Route.rewrites:type_name -> proxelo.snapshot.v1.Rewrite
+	48,  // 47: proxelo.snapshot.v1.Route.children:type_name -> proxelo.snapshot.v1.Route
+	46,  // 48: proxelo.snapshot.v1.Route.error_pages:type_name -> proxelo.snapshot.v1.ErrorPage
+	68,  // 49: proxelo.snapshot.v1.Route.headers:type_name -> proxelo.snapshot.v1.ValueMatch
+	68,  // 50: proxelo.snapshot.v1.Route.query:type_name -> proxelo.snapshot.v1.ValueMatch
+	39,  // 51: proxelo.snapshot.v1.Route.response_headers:type_name -> proxelo.snapshot.v1.HeaderOps
+	39,  // 52: proxelo.snapshot.v1.Route.request_headers:type_name -> proxelo.snapshot.v1.HeaderOps
+	58,  // 53: proxelo.snapshot.v1.Route.access:type_name -> proxelo.snapshot.v1.Access
+	67,  // 54: proxelo.snapshot.v1.Route.bandwidth:type_name -> proxelo.snapshot.v1.Bandwidth
+	66,  // 55: proxelo.snapshot.v1.Route.compression:type_name -> proxelo.snapshot.v1.Compression
+	24,  // 56: proxelo.snapshot.v1.Route.cache:type_name -> proxelo.snapshot.v1.Cache
+	49,  // 57: proxelo.snapshot.v1.Route.filters:type_name -> proxelo.snapshot.v1.Filters
+	57,  // 58: proxelo.snapshot.v1.Route.mirror:type_name -> proxelo.snapshot.v1.Mirror
+	50,  // 59: proxelo.snapshot.v1.Filters.sub:type_name -> proxelo.snapshot.v1.SubFilter
+	52,  // 60: proxelo.snapshot.v1.Filters.ssi:type_name -> proxelo.snapshot.v1.Ssi
+	53,  // 61: proxelo.snapshot.v1.Filters.addition:type_name -> proxelo.snapshot.v1.Addition
+	54,  // 62: proxelo.snapshot.v1.Filters.charset:type_name -> proxelo.snapshot.v1.Charset
+	56,  // 63: proxelo.snapshot.v1.Filters.userid:type_name -> proxelo.snapshot.v1.Userid
+	51,  // 64: proxelo.snapshot.v1.SubFilter.pairs:type_name -> proxelo.snapshot.v1.SubPair
+	55,  // 65: proxelo.snapshot.v1.Charset.to_utf8:type_name -> proxelo.snapshot.v1.CharsetCodes
+	55,  // 66: proxelo.snapshot.v1.Charset.from_utf8:type_name -> proxelo.snapshot.v1.CharsetCodes
 	8,   // 67: proxelo.snapshot.v1.Userid.mode:type_name -> proxelo.snapshot.v1.Userid.Mode
-	59,  // 68: proxelo.snapshot.v1.Access.rules:type_name -> proxelo.snapshot.v1.AccessRule
-	60,  // 69: proxelo.snapshot.v1.Access.basic_auth:type_name -> proxelo.snapshot.v1.BasicAuth
-	62,  // 70: proxelo.snapshot.v1.Access.forward_auth:type_name -> proxelo.snapshot.v1.ForwardAuth
-	63,  // 71: proxelo.snapshot.v1.Access.jwt:type_name -> proxelo.snapshot.v1.Jwt
-	64,  // 72: proxelo.snapshot.v1.Access.oidc:type_name -> proxelo.snapshot.v1.Oidc
-	21,  // 73: proxelo.snapshot.v1.Access.wasm:type_name -> proxelo.snapshot.v1.WasmFilter
-	61,  // 74: proxelo.snapshot.v1.BasicAuth.users:type_name -> proxelo.snapshot.v1.BasicUser
+	60,  // 68: proxelo.snapshot.v1.Access.rules:type_name -> proxelo.snapshot.v1.AccessRule
+	61,  // 69: proxelo.snapshot.v1.Access.basic_auth:type_name -> proxelo.snapshot.v1.BasicAuth
+	63,  // 70: proxelo.snapshot.v1.Access.forward_auth:type_name -> proxelo.snapshot.v1.ForwardAuth
+	64,  // 71: proxelo.snapshot.v1.Access.jwt:type_name -> proxelo.snapshot.v1.Jwt
+	65,  // 72: proxelo.snapshot.v1.Access.oidc:type_name -> proxelo.snapshot.v1.Oidc
+	22,  // 73: proxelo.snapshot.v1.Access.wasm:type_name -> proxelo.snapshot.v1.WasmFilter
+	62,  // 74: proxelo.snapshot.v1.BasicAuth.users:type_name -> proxelo.snapshot.v1.BasicUser
 	9,   // 75: proxelo.snapshot.v1.Compression.encodings:type_name -> proxelo.snapshot.v1.Compression.Encoding
 	10,  // 76: proxelo.snapshot.v1.Compression.proxied:type_name -> proxelo.snapshot.v1.Compression.Proxied
 	11,  // 77: proxelo.snapshot.v1.Compression.static:type_name -> proxelo.snapshot.v1.Compression.Static
 	12,  // 78: proxelo.snapshot.v1.ValueMatch.op:type_name -> proxelo.snapshot.v1.ValueMatch.Op
 	13,  // 79: proxelo.snapshot.v1.PathMatch.kind:type_name -> proxelo.snapshot.v1.PathMatch.Kind
-	76,  // 80: proxelo.snapshot.v1.Action.static:type_name -> proxelo.snapshot.v1.StaticAction
-	80,  // 81: proxelo.snapshot.v1.Action.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
-	74,  // 82: proxelo.snapshot.v1.Action.return:type_name -> proxelo.snapshot.v1.ReturnAction
-	70,  // 83: proxelo.snapshot.v1.Action.gateway:type_name -> proxelo.snapshot.v1.GatewayAction
-	72,  // 84: proxelo.snapshot.v1.Action.memcached:type_name -> proxelo.snapshot.v1.MemcachedAction
-	73,  // 85: proxelo.snapshot.v1.Action.grpc:type_name -> proxelo.snapshot.v1.GrpcAction
+	77,  // 80: proxelo.snapshot.v1.Action.static:type_name -> proxelo.snapshot.v1.StaticAction
+	81,  // 81: proxelo.snapshot.v1.Action.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
+	75,  // 82: proxelo.snapshot.v1.Action.return:type_name -> proxelo.snapshot.v1.ReturnAction
+	71,  // 83: proxelo.snapshot.v1.Action.gateway:type_name -> proxelo.snapshot.v1.GatewayAction
+	73,  // 84: proxelo.snapshot.v1.Action.memcached:type_name -> proxelo.snapshot.v1.MemcachedAction
+	74,  // 85: proxelo.snapshot.v1.Action.grpc:type_name -> proxelo.snapshot.v1.GrpcAction
 	14,  // 86: proxelo.snapshot.v1.GatewayAction.protocol:type_name -> proxelo.snapshot.v1.GatewayAction.Protocol
-	80,  // 87: proxelo.snapshot.v1.GatewayAction.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
-	71,  // 88: proxelo.snapshot.v1.GatewayAction.params:type_name -> proxelo.snapshot.v1.GatewayParam
-	80,  // 89: proxelo.snapshot.v1.MemcachedAction.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
-	80,  // 90: proxelo.snapshot.v1.GrpcAction.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
-	75,  // 91: proxelo.snapshot.v1.StaticAction.try_files:type_name -> proxelo.snapshot.v1.TryFiles
-	78,  // 92: proxelo.snapshot.v1.StaticAction.autoindex:type_name -> proxelo.snapshot.v1.Autoindex
-	79,  // 93: proxelo.snapshot.v1.StaticAction.dav:type_name -> proxelo.snapshot.v1.Dav
-	77,  // 94: proxelo.snapshot.v1.StaticAction.mp4:type_name -> proxelo.snapshot.v1.Mp4
+	81,  // 87: proxelo.snapshot.v1.GatewayAction.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
+	72,  // 88: proxelo.snapshot.v1.GatewayAction.params:type_name -> proxelo.snapshot.v1.GatewayParam
+	81,  // 89: proxelo.snapshot.v1.MemcachedAction.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
+	81,  // 90: proxelo.snapshot.v1.GrpcAction.proxy:type_name -> proxelo.snapshot.v1.ProxyAction
+	76,  // 91: proxelo.snapshot.v1.StaticAction.try_files:type_name -> proxelo.snapshot.v1.TryFiles
+	79,  // 92: proxelo.snapshot.v1.StaticAction.autoindex:type_name -> proxelo.snapshot.v1.Autoindex
+	80,  // 93: proxelo.snapshot.v1.StaticAction.dav:type_name -> proxelo.snapshot.v1.Dav
+	78,  // 94: proxelo.snapshot.v1.StaticAction.mp4:type_name -> proxelo.snapshot.v1.Mp4
 	15,  // 95: proxelo.snapshot.v1.Autoindex.format:type_name -> proxelo.snapshot.v1.Autoindex.Format
 	0,   // 96: proxelo.snapshot.v1.ProxyAction.next_upstream:type_name -> proxelo.snapshot.v1.NextUpstream
-	86,  // 97: proxelo.snapshot.v1.Upstream.targets:type_name -> proxelo.snapshot.v1.Target
-	16,  // 98: proxelo.snapshot.v1.Upstream.balancing:type_name -> proxelo.snapshot.v1.Upstream.Balancing
-	83,  // 99: proxelo.snapshot.v1.Upstream.health_check:type_name -> proxelo.snapshot.v1.HealthCheck
-	85,  // 100: proxelo.snapshot.v1.Upstream.sticky:type_name -> proxelo.snapshot.v1.Sticky
-	82,  // 101: proxelo.snapshot.v1.Upstream.tls:type_name -> proxelo.snapshot.v1.UpstreamTls
-	4,   // 102: proxelo.snapshot.v1.UpstreamTls.min_version:type_name -> proxelo.snapshot.v1.ListenerTls.Version
-	4,   // 103: proxelo.snapshot.v1.UpstreamTls.max_version:type_name -> proxelo.snapshot.v1.ListenerTls.Version
-	17,  // 104: proxelo.snapshot.v1.HealthCheck.kind:type_name -> proxelo.snapshot.v1.HealthCheck.Kind
-	84,  // 105: proxelo.snapshot.v1.HealthCheck.statuses:type_name -> proxelo.snapshot.v1.StatusRange
-	18,  // 106: proxelo.snapshot.v1.Sticky.kind:type_name -> proxelo.snapshot.v1.Sticky.Kind
-	107, // [107:107] is the sub-list for method output_type
-	107, // [107:107] is the sub-list for method input_type
-	107, // [107:107] is the sub-list for extension type_name
-	107, // [107:107] is the sub-list for extension extendee
-	0,   // [0:107] is the sub-list for field type_name
+	82,  // 97: proxelo.snapshot.v1.ProxyAction.redirects:type_name -> proxelo.snapshot.v1.HeaderRewrite
+	82,  // 98: proxelo.snapshot.v1.ProxyAction.cookie_domains:type_name -> proxelo.snapshot.v1.HeaderRewrite
+	82,  // 99: proxelo.snapshot.v1.ProxyAction.cookie_paths:type_name -> proxelo.snapshot.v1.HeaderRewrite
+	83,  // 100: proxelo.snapshot.v1.ProxyAction.cookie_flags:type_name -> proxelo.snapshot.v1.CookieFlags
+	16,  // 101: proxelo.snapshot.v1.HeaderRewrite.kind:type_name -> proxelo.snapshot.v1.HeaderRewrite.Kind
+	89,  // 102: proxelo.snapshot.v1.Upstream.targets:type_name -> proxelo.snapshot.v1.Target
+	17,  // 103: proxelo.snapshot.v1.Upstream.balancing:type_name -> proxelo.snapshot.v1.Upstream.Balancing
+	86,  // 104: proxelo.snapshot.v1.Upstream.health_check:type_name -> proxelo.snapshot.v1.HealthCheck
+	88,  // 105: proxelo.snapshot.v1.Upstream.sticky:type_name -> proxelo.snapshot.v1.Sticky
+	85,  // 106: proxelo.snapshot.v1.Upstream.tls:type_name -> proxelo.snapshot.v1.UpstreamTls
+	4,   // 107: proxelo.snapshot.v1.UpstreamTls.min_version:type_name -> proxelo.snapshot.v1.ListenerTls.Version
+	4,   // 108: proxelo.snapshot.v1.UpstreamTls.max_version:type_name -> proxelo.snapshot.v1.ListenerTls.Version
+	18,  // 109: proxelo.snapshot.v1.HealthCheck.kind:type_name -> proxelo.snapshot.v1.HealthCheck.Kind
+	87,  // 110: proxelo.snapshot.v1.HealthCheck.statuses:type_name -> proxelo.snapshot.v1.StatusRange
+	19,  // 111: proxelo.snapshot.v1.Sticky.kind:type_name -> proxelo.snapshot.v1.Sticky.Kind
+	112, // [112:112] is the sub-list for method output_type
+	112, // [112:112] is the sub-list for method input_type
+	112, // [112:112] is the sub-list for extension type_name
+	112, // [112:112] is the sub-list for extension extendee
+	0,   // [0:112] is the sub-list for field type_name
 }
 
 func init() { file_proxelo_snapshot_v1_snapshot_proto_init() }
@@ -8320,14 +8590,14 @@ func file_proxelo_snapshot_v1_snapshot_proto_init() {
 		(*TryFiles_Status)(nil),
 		(*TryFiles_Named)(nil),
 	}
-	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[63].OneofWrappers = []any{}
+	file_proxelo_snapshot_v1_snapshot_proto_msgTypes[65].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proxelo_snapshot_v1_snapshot_proto_rawDesc), len(file_proxelo_snapshot_v1_snapshot_proto_rawDesc)),
-			NumEnums:      19,
-			NumMessages:   68,
+			NumEnums:      20,
+			NumMessages:   70,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

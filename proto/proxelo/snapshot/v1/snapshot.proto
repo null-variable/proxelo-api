@@ -1132,6 +1132,59 @@ message ProxyAction {
   repeated NextUpstream next_upstream = 5;
   // proxy_next_upstream_tries. Zero: no limit.
   uint32 next_upstream_tries = 6;
+  // Rewrites of the Location header and the URL of Refresh in upstream
+  // responses, the first that matches wins (nginx proxy_redirect). The
+  // control plane includes nginx's default rule. A Location made a path by
+  // a rule becomes absolute with the request host and port. Only for proxy
+  // actions.
+  repeated HeaderRewrite redirects = 7;
+  // Rewrites of the Domain attribute of Set-Cookie in upstream responses
+  // (proxy_cookie_domain). Only for proxy actions.
+  repeated HeaderRewrite cookie_domains = 8;
+  // Rewrites of the Path attribute (proxy_cookie_path). Only for proxy
+  // actions.
+  repeated HeaderRewrite cookie_paths = 9;
+  // Flags of Set-Cookie, from the first entry naming the cookie
+  // (proxy_cookie_flags). Only for proxy actions.
+  repeated CookieFlags cookie_flags = 10;
+  // An upstream response of status 300 or more that the route has an error
+  // page for is replaced by that error page (proxy_intercept_errors,
+  // fastcgi_intercept_errors and the like); a 401 keeps its
+  // WWW-Authenticate. Not for memcached actions.
+  bool intercept_errors = 11;
+}
+
+// HeaderRewrite replaces a header value that matches pattern; a Set-Cookie
+// whose attributes all decline keeps its exact bytes.
+message HeaderRewrite {
+  enum Kind {
+    // The value starts with pattern, a template; that part is replaced.
+    KIND_UNSPECIFIED = 0;
+    // PCRE2 searched in the value, which is replaced whole; the replacement
+    // may use the groups as $1..$9.
+    KIND_REGEX = 1;
+    // KIND_REGEX ignoring case.
+    KIND_REGEX_CASELESS = 2;
+    // A cookie domain equal to pattern, a template, ignoring case and a
+    // leading dot, which stays.
+    KIND_DOMAIN = 3;
+  }
+  Kind kind = 1;
+  string pattern = 2;
+  // Template.
+  string replacement = 3;
+}
+
+// CookieFlags sets or removes Secure, HttpOnly and SameSite.
+message CookieFlags {
+  // Cookie name: a template compared ignoring case, or with regex a PCRE2
+  // ignoring case.
+  string cookie = 1;
+  bool regex = 2;
+  // Templates expanding to secure, nosecure, httponly, nohttponly,
+  // samesite=strict, samesite=lax, samesite=none or nosamesite; empty and
+  // other values are ignored.
+  repeated string flags = 3;
 }
 
 // When a request moves on to the next target (proxy_next_upstream).
